@@ -61,7 +61,8 @@ pipeline {
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan config:cache"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan route:cache"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan view:cache"
-                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan storage:link --force"
+                bat "if exist \"%DEPLOY_DIR%\\public\\storage\" rmdir \"%DEPLOY_DIR%\\public\\storage\""
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan storage:link"
             }
         }
 
