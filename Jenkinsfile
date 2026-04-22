@@ -4,9 +4,9 @@ pipeline {
     environment {
         PHP          = 'D:\\php-8.3.16-nts\\php.exe'
         COMPOSER_BIN = 'C:\\ProgramData\\ComposerSetup\\bin\\composer.phar'
-        DEPLOY_DIR  = 'D:\\projects\\jp-document-tracking'
-        APP_SITE    = 'jp-document-tracking'
-        PATH        = "D:\\php-8.3.16-nts;${env.PATH}"
+        DEPLOY_DIR   = 'D:\\projects\\jp-document-tracking'
+        APP_SITE     = 'jp-document-tracking'
+        PATH         = "D:\\php-8.3.16-nts;${env.PATH}"
     }
 
     stages {
@@ -25,18 +25,9 @@ pipeline {
 
         stage('Prepare .env') {
             steps {
-                // Ambil .env dari Jenkins Credentials (type: Secret file, ID: jp-doc-env)
                 withCredentials([file(credentialsId: 'jp-doc-env', variable: 'ENV_FILE')]) {
                     bat "copy /Y \"${ENV_FILE}\" .env"
                 }
-            }
-        }
-
-        stage('Optimize') {
-            steps {
-                bat "${PHP} artisan config:cache"
-                bat "${PHP} artisan route:cache"
-                bat "${PHP} artisan view:cache"
             }
         }
 
@@ -48,7 +39,12 @@ pipeline {
 
         stage('Deploy ke IIS') {
             steps {
-                // Sync file ke folder IIS (kecuali storage & .env)
+                // Copy .env production ke deploy dir lebih dulu
+                withCredentials([file(credentialsId: 'jp-doc-env', variable: 'ENV_FILE')]) {
+                    bat "copy /Y \"${ENV_FILE}\" \"%DEPLOY_DIR%\\.env\""
+                }
+
+                // Sync file ke deploy dir
                 bat """
                     robocopy . "%DEPLOY_DIR%" /E /XO ^
                         /XD .git .claude vendor\\bin storage\\app\\documents ^
@@ -56,15 +52,21 @@ pipeline {
                         /NJH /NJS
                     IF %ERRORLEVEL% LEQ 7 EXIT /B 0
                 """
+            }
+        }
 
-                // Buat storage symlink di deploy dir (cd dulu agar base_path benar)
+        stage('Optimize di Deploy Dir') {
+            steps {
+                // Semua perintah artisan dijalankan dari deploy dir agar path cache benar
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan config:cache"
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan route:cache"
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan view:cache"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan storage:link --force"
             }
         }
 
         stage('Recycle App Pool') {
             steps {
-                // Recycle app pool IIS agar PHP cache fresh
                 bat "C:\\Windows\\System32\\inetsrv\\appcmd recycle apppool /apppool.name:\"${APP_SITE}\""
             }
         }
