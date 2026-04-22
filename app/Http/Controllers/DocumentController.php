@@ -54,7 +54,7 @@ class DocumentController extends Controller
         $fileModifiedAt = null;
         if ($request->filled('file_modified_at')) {
             try {
-                $fileModifiedAt = \Carbon\Carbon::createFromTimestampMs((int) $request->input('file_modified_at'));
+                $fileModifiedAt = \Carbon\Carbon::createFromTimestampMs((int) $request->input('file_modified_at'), 'Asia/Jakarta');
             } catch (\Exception $e) {
                 $fileModifiedAt = null;
             }

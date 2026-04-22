@@ -70,7 +70,7 @@
                             <span class="badge bg-primary-subtle text-primary badge-meta">
                                 <i class="bi bi-hdd me-1"></i>{{ $doc->file_modified_at->format('d M Y') }}
                             </span>
-                            <div class="text-muted small">{{ $doc->file_modified_at->format('H:i') }}</div>
+                            <div class="text-muted small">{{ $doc->file_modified_at->format('H:i') }} WIB</div>
                         @else
                             <span class="text-muted small">—</span>
                         @endif

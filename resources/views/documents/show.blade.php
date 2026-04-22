@@ -21,7 +21,7 @@
                             <div class="small text-muted mb-1"><i class="bi bi-hdd me-1"></i>File Modified (OS Level)</div>
                             @if($document->file_modified_at)
                                 <div class="fw-bold">{{ $document->file_modified_at->format('d M Y') }}</div>
-                                <div class="small text-muted">{{ $document->file_modified_at->format('H:i:s') }}</div>
+                                <div class="small text-muted">{{ $document->file_modified_at->format('H:i:s') }} <span class="badge bg-secondary" style="font-size:0.65rem">WIB</span></div>
                             @else
                                 <div class="text-muted">Tidak tersedia</div>
                             @endif
