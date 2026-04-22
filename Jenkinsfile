@@ -58,6 +58,7 @@ pipeline {
         stage('Optimize di Deploy Dir') {
             steps {
                 // Semua perintah artisan dijalankan dari deploy dir agar path cache benar
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan cache:clear"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan config:cache"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan route:cache"
                 bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan view:cache"

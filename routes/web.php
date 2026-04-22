@@ -3,7 +3,7 @@
 use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn() => redirect()->route('documents.index'));
+Route::redirect('/', '/documents');
 
 Route::resource('documents', DocumentController::class)->except(['edit', 'update']);
 Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
