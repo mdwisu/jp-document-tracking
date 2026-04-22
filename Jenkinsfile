@@ -5,7 +5,8 @@ pipeline {
         PHP         = 'D:\\php-8.3.16-nts\\php.exe'
         COMPOSER    = 'C:\\ProgramData\\ComposerSetup\\bin\\composer.bat'
         DEPLOY_DIR  = 'D:\\projects\\jp-document-tracking'
-        APP_SITE    = 'jp-document-tracking'                        // nama app pool di IIS, sesuaikan jika beda
+        APP_SITE    = 'jp-document-tracking'
+        PATH        = "D:\\php-8.3.16-nts;${env.PATH}"
     }
 
     stages {
