@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PHP         = 'D:\\php-8.3.16-nts\\php.exe'
-        COMPOSER    = 'C:\\ProgramData\\ComposerSetup\\bin\\composer.phar'
+        PHP          = 'D:\\php-8.3.16-nts\\php.exe'
+        COMPOSER_BIN = 'C:\\ProgramData\\ComposerSetup\\bin\\composer.phar'
         DEPLOY_DIR  = 'D:\\projects\\jp-document-tracking'
         APP_SITE    = 'jp-document-tracking'
         PATH        = "D:\\php-8.3.16-nts;${env.PATH}"
@@ -19,7 +19,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat "${PHP} ${COMPOSER} install --no-dev --optimize-autoloader --no-interaction"
+                bat "${PHP} ${COMPOSER_BIN} install --no-dev --optimize-autoloader --no-interaction"
             }
         }
 
