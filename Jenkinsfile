@@ -28,7 +28,6 @@ pipeline {
                 withCredentials([file(credentialsId: 'jp-doc-env', variable: 'ENV_FILE')]) {
                     bat "copy /Y \"${ENV_FILE}\" .env"
                 }
-                bat "${PHP} artisan key:generate --force"
             }
         }
 
