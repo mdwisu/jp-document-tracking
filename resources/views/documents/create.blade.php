@@ -32,7 +32,10 @@
                         <input type="text" name="uploaded_by" class="form-control"
                                placeholder="Nama admin / user" value="{{ old('uploaded_by') }}">
                     </div>
-
+                    <div class="alert alert-info small py-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Sistem membaca: <strong>tanggal OS file</strong> + <strong>metadata internal PDF</strong> (jika tersedia).
+                    </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
