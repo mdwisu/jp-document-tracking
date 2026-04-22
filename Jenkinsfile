@@ -57,8 +57,8 @@ pipeline {
                     IF %ERRORLEVEL% LEQ 7 EXIT /B 0
                 """
 
-                // Pastikan storage di deploy dir punya symlink / folder yang benar
-                bat "${PHP} \"%DEPLOY_DIR%\\artisan\" storage:link --force"
+                // Buat storage symlink di deploy dir (cd dulu agar base_path benar)
+                bat "cd /d \"%DEPLOY_DIR%\" && ${PHP} artisan storage:link --force"
             }
         }
 
