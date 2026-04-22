@@ -14,6 +14,47 @@
             </div>
             <div class="card-body">
 
+                <h6 class="text-muted text-uppercase small mb-3 fw-bold">Tanggal dari OS (seperti Google Drive)</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-12">
+                        <div class="p-3 rounded bg-primary-subtle">
+                            <div class="small text-muted mb-1"><i class="bi bi-hdd me-1"></i>File Modified (OS Level)</div>
+                            @if($document->file_modified_at)
+                                <div class="fw-bold">{{ $document->file_modified_at->format('d M Y') }}</div>
+                                <div class="small text-muted">{{ $document->file_modified_at->format('H:i:s') }}</div>
+                            @else
+                                <div class="text-muted">Tidak tersedia</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="text-muted text-uppercase small mb-3 fw-bold">Tanggal dari Metadata Internal PDF</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded bg-success-subtle">
+                            <div class="small text-muted mb-1"><i class="bi bi-calendar-plus me-1"></i>PDF Created</div>
+                            @if($document->pdf_created_at)
+                                <div class="fw-bold">{{ $document->pdf_created_at->format('d M Y') }}</div>
+                                <div class="small text-muted">{{ $document->pdf_created_at->format('H:i:s') }}</div>
+                            @else
+                                <div class="text-muted fst-italic small">Tidak ada di metadata PDF</div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded bg-warning-subtle">
+                            <div class="small text-muted mb-1"><i class="bi bi-pencil me-1"></i>PDF Modified</div>
+                            @if($document->pdf_modified_at)
+                                <div class="fw-bold">{{ $document->pdf_modified_at->format('d M Y') }}</div>
+                                <div class="small text-muted">{{ $document->pdf_modified_at->format('H:i:s') }}</div>
+                            @else
+                                <div class="text-muted fst-italic small">Tidak ada di metadata PDF</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <h6 class="text-muted text-uppercase small mb-3 fw-bold">Metadata PDF</h6>
                 <table class="table table-sm table-borderless mb-4">
                     <tr>
@@ -34,32 +75,6 @@
                     </tr>
                 </table>
 
-                <h6 class="text-muted text-uppercase small mb-3 fw-bold">Tanggal dari Metadata PDF</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded bg-success-subtle">
-                            <div class="small text-muted mb-1"><i class="bi bi-calendar-plus me-1"></i>PDF Created</div>
-                            @if($document->pdf_created_at)
-                                <div class="fw-bold">{{ $document->pdf_created_at->format('d M Y') }}</div>
-                                <div class="small text-muted">{{ $document->pdf_created_at->format('H:i:s') }}</div>
-                            @else
-                                <div class="text-muted">Tidak tersedia</div>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded bg-warning-subtle">
-                            <div class="small text-muted mb-1"><i class="bi bi-pencil me-1"></i>PDF Modified</div>
-                            @if($document->pdf_modified_at)
-                                <div class="fw-bold">{{ $document->pdf_modified_at->format('d M Y') }}</div>
-                                <div class="small text-muted">{{ $document->pdf_modified_at->format('H:i:s') }}</div>
-                            @else
-                                <div class="text-muted">Tidak tersedia</div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
                 <h6 class="text-muted text-uppercase small mb-3 fw-bold">Info Upload</h6>
                 <table class="table table-sm table-borderless">
                     <tr>
@@ -71,7 +86,7 @@
                         <td>{{ $document->uploaded_by ?? '—' }}</td>
                     </tr>
                     <tr>
-                        <td class="text-muted">Tanggal Upload</td>
+                        <td class="text-muted">Tanggal Upload ke Sistem</td>
                         <td>{{ $document->created_at->format('d M Y H:i') }}</td>
                     </tr>
                 </table>

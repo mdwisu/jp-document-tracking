@@ -37,8 +37,9 @@ class DocumentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pdf_file' => 'required|file|mimes:pdf|max:51200',
-            'uploaded_by' => 'nullable|string|max:100',
+            'pdf_file'          => 'required|file|mimes:pdf|max:51200',
+            'uploaded_by'       => 'nullable|string|max:100',
+            'file_modified_at'  => 'nullable|integer',
         ]);
 
         $file = $request->file('pdf_file');
@@ -48,6 +49,16 @@ class DocumentController extends Controller
 
         $fullPath = Storage::disk('local')->path($path);
         $meta = $this->pdfService->extract($fullPath);
+
+        // file_modified_at dikirim dari JavaScript sebagai Unix timestamp dalam milidetik
+        $fileModifiedAt = null;
+        if ($request->filled('file_modified_at')) {
+            try {
+                $fileModifiedAt = \Carbon\Carbon::createFromTimestampMs((int) $request->input('file_modified_at'));
+            } catch (\Exception $e) {
+                $fileModifiedAt = null;
+            }
+        }
 
         Document::create([
             'original_filename' => $originalName,
@@ -60,6 +71,7 @@ class DocumentController extends Controller
             'document_producer' => $meta['producer'],
             'pdf_created_at'    => $meta['created_at'],
             'pdf_modified_at'   => $meta['modified_at'],
+            'file_modified_at'  => $fileModifiedAt,
             'uploaded_by'       => $request->input('uploaded_by'),
         ]);
 

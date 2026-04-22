@@ -37,6 +37,7 @@
                     <th>#</th>
                     <th>Nama File</th>
                     <th>Judul / Author</th>
+                    <th>File Modified (OS)</th>
                     <th>PDF Created</th>
                     <th>PDF Modified</th>
                     <th>Diupload</th>
@@ -61,6 +62,16 @@
                             <span class="text-muted small"><i class="bi bi-person me-1"></i>{{ $doc->document_author }}</span>
                         @endif
                         @if(!$doc->document_title && !$doc->document_author)
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($doc->file_modified_at)
+                            <span class="badge bg-primary-subtle text-primary badge-meta">
+                                <i class="bi bi-hdd me-1"></i>{{ $doc->file_modified_at->format('d M Y') }}
+                            </span>
+                            <div class="text-muted small">{{ $doc->file_modified_at->format('H:i') }}</div>
+                        @else
                             <span class="text-muted small">—</span>
                         @endif
                     </td>

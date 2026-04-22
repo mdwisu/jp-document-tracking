@@ -17,12 +17,14 @@ class Document extends Model
         'document_producer',
         'pdf_created_at',
         'pdf_modified_at',
+        'file_modified_at',
         'uploaded_by',
     ];
 
     protected $casts = [
-        'pdf_created_at' => 'datetime',
-        'pdf_modified_at' => 'datetime',
+        'pdf_created_at'   => 'datetime',
+        'pdf_modified_at'  => 'datetime',
+        'file_modified_at' => 'datetime',
     ];
 
     public function getFileSizeFormattedAttribute(): string
