@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'depo.unlocked'   => \App\Http\Middleware\EnsureDepoUnlocked::class,
+            'master.unlocked' => \App\Http\Middleware\EnsureMasterUnlocked::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

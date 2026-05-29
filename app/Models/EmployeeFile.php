@@ -3,29 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Document extends Model
+class EmployeeFile extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
+        'employee_id',
+        'type',
         'original_filename',
         'stored_filename',
         'file_path',
         'file_size',
-        'document_title',
-        'document_author',
-        'document_creator',
-        'document_producer',
-        'pdf_created_at',
-        'pdf_modified_at',
-        'file_modified_at',
-        'uploaded_by',
     ];
 
-    protected $casts = [
-        'pdf_created_at'   => 'datetime',
-        'pdf_modified_at'  => 'datetime',
-        'file_modified_at' => 'datetime',
-    ];
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
 
     public function getFileSizeFormattedAttribute(): string
     {

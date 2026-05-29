@@ -114,4 +114,16 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Master Password Developer
+    |--------------------------------------------------------------------------
+    |
+    | Hash bcrypt master password. Jika diisi, password ini bisa membuka folder
+    | depo mana pun tanpa perlu tahu password masing-masing depo.
+    |
+    */
+
+    'dev_master_hash' => env('DEV_MASTER_PASSWORD_HASH'),
+
 ];

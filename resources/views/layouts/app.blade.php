@@ -17,11 +17,8 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('documents.index') }}">
-                <i class="bi bi-file-earmark-pdf-fill me-2"></i>JP Document Tracking
-            </a>
-            <a href="{{ route('documents.create') }}" class="btn btn-light btn-sm ms-auto">
-                <i class="bi bi-upload me-1"></i>Upload PDF
+            <a class="navbar-brand" href="{{ route('depos.index') }}">
+                <i class="bi bi-archive-fill me-2"></i>JP Document Tracking
             </a>
         </div>
     </nav>
@@ -32,8 +29,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
         @yield('content')
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>
