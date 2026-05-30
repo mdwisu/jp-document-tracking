@@ -63,7 +63,7 @@ class EmployeeController extends Controller
             $ext = $file->getClientOriginalExtension();
             $displayName = "{$slug}_" . strtoupper($type) . ".{$ext}";
             $storedName = Str::uuid() . ".{$ext}";
-            $path = $file->storeAs("depos/{$depo->id}/{$employee->id}", $storedName, 'local');
+            $path = $file->storeAs("depos/{$depo->id}/{$employee->id}", $storedName, 'employee_files');
 
             $employee->files()->create([
                 'type'              => $type,
@@ -87,7 +87,7 @@ class EmployeeController extends Controller
 
     public function download(EmployeeFile $file)
     {
-        $path = Storage::disk('local')->path($file->file_path);
+        $path = Storage::disk('employee_files')->path($file->file_path);
 
         return response()->download($path, $file->original_filename);
     }

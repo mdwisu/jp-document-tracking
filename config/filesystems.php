@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Disk khusus file karyawan (KTP/KK/penjamin). Di produksi diarahkan ke
+        // network share server storage (mis. \\192.168.0.11\jp-storage) lewat env
+        // EMPLOYEE_FILES_ROOT. Default storage/app/private untuk lokal/dev.
+        'employee_files' => [
+            'driver' => 'local',
+            'root' => env('EMPLOYEE_FILES_ROOT', storage_path('app/private')),
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
