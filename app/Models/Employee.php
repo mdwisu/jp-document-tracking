@@ -19,6 +19,11 @@ class Employee extends Model
         'address',
         'phone',
         'email',
+        'tanggal_mulai_kerja',
+    ];
+
+    protected $casts = [
+        'tanggal_mulai_kerja' => 'date',
     ];
 
     protected static function booted(): void

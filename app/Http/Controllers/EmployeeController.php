@@ -42,6 +42,7 @@ class EmployeeController extends Controller
             'address'    => 'required|string|max:500',
             'phone'      => 'required|string|max:30',
             'email'      => 'required|email|max:150',
+            'tanggal_mulai_kerja' => 'required|date',
             'ktp'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
             'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
             'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
@@ -54,6 +55,7 @@ class EmployeeController extends Controller
             'address'    => $data['address'],
             'phone'      => $data['phone'],
             'email'      => $data['email'],
+            'tanggal_mulai_kerja' => $data['tanggal_mulai_kerja'],
         ]);
 
         $slug = Str::slug($employee->name, '_');

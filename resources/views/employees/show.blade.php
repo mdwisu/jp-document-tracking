@@ -28,6 +28,7 @@
                 <dt class="col-5">Alamat</dt><dd class="col-7">{{ $employee->address }}</dd>
                 <dt class="col-5">No. HP / WA</dt><dd class="col-7">{{ $employee->phone }}</dd>
                 <dt class="col-5">Email</dt><dd class="col-7">{{ $employee->email }}</dd>
+                <dt class="col-5">Mulai Kerja</dt><dd class="col-7">{{ $employee->tanggal_mulai_kerja?->timezone('Asia/Jakarta')->format('d M Y') ?? '-' }}</dd>
             </dl>
         </div></div>
     </div>

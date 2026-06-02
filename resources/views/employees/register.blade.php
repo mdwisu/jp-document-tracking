@@ -37,6 +37,12 @@
                             <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Mulai Kerja</label>
+                            <input type="date" name="tanggal_mulai_kerja" class="form-control" value="{{ old('tanggal_mulai_kerja') }}" required>
+                        </div>
+                    </div>
                     <hr>
                     <p class="text-muted small mb-3">Unggah berkas (PDF/JPG/PNG, maks 50 MB).</p>
                     <div class="row">
