@@ -37,15 +37,27 @@ class EmployeeController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:150',
-            'ktp_number' => 'required|string|max:50',
-            'kk_number'  => 'required|string|max:50',
+            'ktp_number' => 'required|digits:16',
+            'kk_number'  => 'required|digits:16',
             'address'    => 'required|string|max:500',
-            'phone'      => 'required|string|max:30',
-            'email'      => 'required|email|max:150',
-            'tanggal_mulai_kerja' => 'required|date',
+            'phone'      => ['required', 'regex:/^[0-9]{10,15}$/'],
+            'email'      => 'required|email:rfc,dns|max:150',
+            'tanggal_mulai_kerja' => 'required|date|after_or_equal:2000-01-01|before_or_equal:' . now()->addYear()->toDateString(),
             'ktp'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
             'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
             'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
+        ], [
+            'ktp_number.digits' => 'Nomor KTP harus tepat 16 digit angka.',
+            'kk_number.digits'  => 'Nomor KK harus tepat 16 digit angka.',
+            'phone.regex'       => 'Nomor HP harus berupa angka 10–15 digit.',
+            'email.email'       => 'Format email tidak valid atau domainnya tidak ditemukan.',
+            'tanggal_mulai_kerja.before_or_equal' => 'Tanggal mulai kerja tidak boleh terlalu jauh di masa depan.',
+            'tanggal_mulai_kerja.after_or_equal'  => 'Tanggal mulai kerja tidak valid.',
+        ], [
+            'name' => 'Nama', 'ktp_number' => 'Nomor KTP', 'kk_number' => 'Nomor KK',
+            'address' => 'Alamat', 'phone' => 'Nomor HP', 'email' => 'Email',
+            'tanggal_mulai_kerja' => 'Tanggal Mulai Kerja',
+            'ktp' => 'berkas KTP', 'kk' => 'berkas KK', 'penjamin' => 'Formulir Penjamin',
         ]);
 
         $employee = $depo->employees()->create([
