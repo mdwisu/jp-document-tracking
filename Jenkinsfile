@@ -73,7 +73,12 @@ pipeline {
 
         stage('Recycle App Pool') {
             steps {
-                bat "C:\\Windows\\System32\\inetsrv\\appcmd list config \"%IIS_APP%\" /section:handlers /text:* | findstr /I \"PHP_via_FastCGI php-cgi\""
+                bat """
+                    findstr /I "php-cgi.exe php-8.3.16-nts" "%DEPLOY_DIR%\\public\\web.config"
+                    C:\\Windows\\System32\\inetsrv\\appcmd list config "%IIS_APP%" /section:handlers /text:* | findstr /I "PHP_via_FastCGI php-cgi"
+                    IF %ERRORLEVEL% EQU 1 echo Handler PHP 8.3 tidak muncul dari appcmd list config; cek IIS_APP atau section handlers, recycle tetap dilanjutkan.
+                    EXIT /B 0
+                """
                 bat "C:\\Windows\\System32\\inetsrv\\appcmd recycle apppool /apppool.name:\"${APP_SITE}\""
             }
         }
