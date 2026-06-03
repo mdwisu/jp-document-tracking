@@ -62,6 +62,22 @@ Buat folder deploy terlebih dahulu jika belum ada:
 mkdir D:\projects\jp-document-tracking
 ```
 
+### 1.8 Batas Upload PHP dan IIS
+
+Aplikasi menerima 3 berkas upload dengan batas masing-masing 50 MB, sehingga batas total request harus lebih besar dari 150 MB.
+
+File `public\.user.ini` sudah mengatur:
+
+```ini
+upload_max_filesize = 50M
+post_max_size = 200M
+max_input_time = 300
+```
+
+File `public\web.config` juga menaikkan batas IIS `maxAllowedContentLength` menjadi 200 MB.
+
+Jika server tidak membaca `.user.ini`, set nilai yang sama langsung di `D:\php-8.3.16-nts\php.ini`, lalu recycle Application Pool `jp-document-tracking`.
+
 ---
 
 ## 2. Persiapan File .env Production
