@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Depo;
 use App\Models\Employee;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class TrashController extends Controller
 {
@@ -62,5 +64,54 @@ class TrashController extends Controller
         $employee->files()->onlyTrashed()->restore();
 
         return redirect()->route('trash.index')->with('success', "Karyawan \"{$employee->name}\" berhasil dipulihkan.");
+    }
+
+    public function forceDeleteDepo(int $id)
+    {
+        $depo = Depo::onlyTrashed()->findOrFail($id);
+        $depoName = $depo->name;
+
+        $depo->employees()->withTrashed()->get()->each(function (Employee $employee) {
+            $this->forceDeleteEmployeeWithFiles($employee);
+        });
+
+        Storage::disk('employee_files')->deleteDirectory("depos/{$depo->id}");
+        $depo->forceDelete();
+
+        return redirect()->route('trash.index')->with('success', "Depo \"{$depoName}\" berhasil dihapus permanen beserta semua file karyawannya.");
+    }
+
+    public function forceDeleteEmployee(int $id)
+    {
+        $employee = Employee::onlyTrashed()->findOrFail($id);
+        $employeeName = $employee->name;
+
+        $this->forceDeleteEmployeeWithFiles($employee);
+
+        return redirect()->route('trash.index')->with('success', "Karyawan \"{$employeeName}\" berhasil dihapus permanen beserta filenya.");
+    }
+
+    private function forceDeleteEmployeeWithFiles(Employee $employee): void
+    {
+        $files = $employee->files()->withTrashed()->get();
+
+        $this->deletePhysicalFiles($files);
+        Storage::disk('employee_files')->deleteDirectory("depos/{$employee->depo_id}/{$employee->id}");
+
+        $files->each->forceDelete();
+        $employee->forceDelete();
+    }
+
+    private function deletePhysicalFiles(EloquentCollection $files): void
+    {
+        $paths = $files
+            ->pluck('file_path')
+            ->filter()
+            ->values()
+            ->all();
+
+        if ($paths !== []) {
+            Storage::disk('employee_files')->delete($paths);
+        }
     }
 }

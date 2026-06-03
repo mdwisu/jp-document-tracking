@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <hr>
-                    <p class="text-muted small mb-3">Unggah berkas (PDF/JPG/PNG, maks 50 MB).</p>
+                    <p class="text-muted small mb-3">Unggah berkas (PDF/JPG/PNG, maks 20 MB).</p>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Upload KTP</label>

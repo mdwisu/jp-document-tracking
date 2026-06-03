@@ -43,9 +43,9 @@ class EmployeeController extends Controller
             'phone'      => ['required', 'regex:/^[0-9]{10,15}$/'],
             'email'      => 'required|email:rfc,dns|max:150',
             'tanggal_mulai_kerja' => 'required|date|after_or_equal:2000-01-01|before_or_equal:' . now()->addYear()->toDateString(),
-            'ktp'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
-            'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
-            'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200',
+            'ktp'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
         ], [
             'ktp_number.digits' => 'Nomor KTP harus tepat 16 digit angka.',
             'kk_number.digits'  => 'Nomor KK harus tepat 16 digit angka.',

@@ -20,9 +20,14 @@
                         <td>{{ $depo->employees_count }}</td>
                         <td>{{ $depo->deleted_at->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</td>
                         <td class="text-end pe-3">
-                            <form action="{{ route('trash.restoreDepo', $depo->id) }}" method="POST">
+                            <form action="{{ route('trash.restoreDepo', $depo->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button class="btn btn-sm btn-success"><i class="bi bi-arrow-counterclockwise me-1"></i>Pulihkan</button>
+                            </form>
+                            <form action="{{ route('trash.forceDeleteDepo', $depo->id) }}" method="POST" class="d-inline" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus permanen depo ' . $depo->name . ' beserta semua file karyawannya? Tindakan ini tidak bisa dibatalkan.') }});">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hapus Permanen</button>
                             </form>
                         </td>
                     </tr>
@@ -47,9 +52,14 @@
                         <td>{{ $emp->depo->name }}</td>
                         <td>{{ $emp->deleted_at->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</td>
                         <td class="text-end pe-3">
-                            <form action="{{ route('trash.restoreEmployee', $emp->id) }}" method="POST">
+                            <form action="{{ route('trash.restoreEmployee', $emp->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button class="btn btn-sm btn-success"><i class="bi bi-arrow-counterclockwise me-1"></i>Pulihkan</button>
+                            </form>
+                            <form action="{{ route('trash.forceDeleteEmployee', $emp->id) }}" method="POST" class="d-inline" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus permanen karyawan ' . $emp->name . ' beserta filenya? Tindakan ini tidak bisa dibatalkan.') }});">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Hapus Permanen</button>
                             </form>
                         </td>
                     </tr>

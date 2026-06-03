@@ -21,7 +21,9 @@ Route::post('/trash/unlock', [TrashController::class, 'unlock'])->name('trash.un
 Route::middleware('master.unlocked')->group(function () {
     Route::get('/trash', [TrashController::class, 'index'])->name('trash.index');
     Route::post('/trash/depos/{id}/restore', [TrashController::class, 'restoreDepo'])->name('trash.restoreDepo');
+    Route::delete('/trash/depos/{id}', [TrashController::class, 'forceDeleteDepo'])->name('trash.forceDeleteDepo');
     Route::post('/trash/employees/{id}/restore', [TrashController::class, 'restoreEmployee'])->name('trash.restoreEmployee');
+    Route::delete('/trash/employees/{id}', [TrashController::class, 'forceDeleteEmployee'])->name('trash.forceDeleteEmployee');
 });
 
 // Sisi admin — butuh password depo
