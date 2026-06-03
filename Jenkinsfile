@@ -6,6 +6,7 @@ pipeline {
         COMPOSER_BIN = 'C:\\ProgramData\\ComposerSetup\\bin\\composer.phar'
         DEPLOY_DIR   = 'D:\\projects\\jp-document-tracking'
         APP_SITE     = 'jp-document-tracking'
+        IIS_APP      = 'web.jessindo.net/jp-document-tracking'
         PATH         = "D:\\php-8.3.16-nts;${env.PATH}"
     }
 
@@ -19,6 +20,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                bat "${PHP} -v"
                 bat "${PHP} ${COMPOSER_BIN} install --no-dev --optimize-autoloader --no-interaction"
             }
         }
@@ -71,6 +73,7 @@ pipeline {
 
         stage('Recycle App Pool') {
             steps {
+                bat "C:\\Windows\\System32\\inetsrv\\appcmd list config \"%IIS_APP%\" /section:handlers /text:* | findstr /I \"PHP_via_FastCGI php-cgi\""
                 bat "C:\\Windows\\System32\\inetsrv\\appcmd recycle apppool /apppool.name:\"${APP_SITE}\""
             }
         }

@@ -31,6 +31,17 @@ Download dari: https://www.iis.net/downloads/community/2018/05/php-manager-150-f
 
 > Atau gunakan PHP Manager for IIS untuk langkah ini lebih mudah.
 
+File `public\web.config` juga menyimpan mapping app-level berikut agar deploy Jenkins tidak fallback ke handler global PHP lain:
+
+```xml
+<handlers>
+  <remove name="PHP_via_FastCGI" />
+  <add name="PHP_via_FastCGI" path="*.php" verb="*" modules="FastCgiModule" scriptProcessor="D:\php-8.3.16-nts\php-cgi.exe" resourceType="Either" requireAccess="Script" />
+</handlers>
+```
+
+Jika IIS menolak bagian ini, pastikan section `system.webServer/handlers` tidak terkunci di level server.
+
 ### 1.4 Buat App Pool Baru
 
 1. Di IIS Manager → **Application Pools** → **Add Application Pool**
