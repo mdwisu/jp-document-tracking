@@ -106,6 +106,14 @@ class EmployeeController extends Controller
         return response()->download($path, $file->original_filename);
     }
 
+    public function preview(EmployeeFile $file)
+    {
+        $path = Storage::disk('employee_files')->path($file->file_path);
+        $mime = Storage::disk('employee_files')->mimeType($file->file_path);
+
+        return response()->file($path, ['Content-Type' => $mime]);
+    }
+
     public function destroy(Employee $employee)
     {
         $depo = $employee->depo;

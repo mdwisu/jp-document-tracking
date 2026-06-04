@@ -35,4 +35,5 @@ Route::middleware('depo.unlocked')->group(function () {
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 
     Route::get('/files/{file}/download', [EmployeeController::class, 'download'])->name('files.download');
+    Route::get('/files/{file}/preview', [EmployeeController::class, 'preview'])->name('files.preview');
 });

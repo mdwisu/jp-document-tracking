@@ -73,7 +73,30 @@ Buat folder deploy terlebih dahulu jika belum ada:
 mkdir D:\projects\jp-document-tracking
 ```
 
-### 1.8 Batas Upload PHP dan IIS
+### 1.8 Siapkan Network Share File Upload
+
+Jika `.env` production memakai:
+
+```env
+EMPLOYEE_FILES_ROOT=\\192.168.0.10\jp-storage
+```
+
+maka di server `192.168.0.10` harus ada folder lokal yang dishare sebagai `jp-storage`, misalnya:
+
+```bat
+mkdir D:\jp-document-tracking
+net share jp-storage=D:\jp-document-tracking /GRANT:Everyone,FULL
+```
+
+Setelah itu atur permission NTFS folder `D:\jp-document-tracking` agar user yang menjalankan IIS/App Pool di server web punya akses **Modify**. Jika App Pool memakai identity default dan server berada dalam domain, beri akses ke akun komputer server web, misalnya `DOMAIN\NAMA-SERVER-WEB$`. Alternatif yang lebih rapi adalah menjalankan App Pool dengan domain service account, lalu beri account itu akses ke share dan folder.
+
+Pastikan path ini bisa diakses dari server web:
+
+```bat
+dir \\192.168.0.10\jp-storage
+```
+
+### 1.9 Batas Upload PHP dan IIS
 
 Aplikasi menerima 3 berkas upload dengan batas aplikasi masing-masing 20 MB. Batas PHP dibuat sedikit lebih longgar agar file yang mendekati 20 MB tidak gagal sebelum masuk validasi Laravel.
 

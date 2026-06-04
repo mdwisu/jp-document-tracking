@@ -48,7 +48,7 @@ return [
         ],
 
         // Disk khusus file karyawan (KTP/KK/penjamin). Di produksi diarahkan ke
-        // network share server storage (mis. \\192.168.0.11\jp-storage) lewat env
+        // network share server storage (mis. \\192.168.0.10\jp-storage) lewat env
         // EMPLOYEE_FILES_ROOT. Default storage/app/private untuk lokal/dev.
         'employee_files' => [
             'driver' => 'local',
