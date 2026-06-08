@@ -37,7 +37,7 @@ class EmployeeController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:150',
-            'ktp_number' => 'required|digits:16',
+            'ktp_number' => ['required', 'digits:16', \Illuminate\Validation\Rule::unique('employees', 'ktp_number')->whereNull('deleted_at')],
             'kk_number'  => 'required|digits:16',
             'address'    => 'required|string|max:500',
             'phone'      => ['required', 'regex:/^[0-9]{10,15}$/'],
@@ -47,7 +47,8 @@ class EmployeeController extends Controller
             'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
             'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
         ], [
-            'ktp_number.digits' => 'Nomor KTP harus tepat 16 digit angka.',
+            'ktp_number.digits'  => 'Nomor KTP harus tepat 16 digit angka.',
+            'ktp_number.unique'  => 'Nomor KTP sudah terdaftar.',
             'kk_number.digits'  => 'Nomor KK harus tepat 16 digit angka.',
             'phone.regex'       => 'Nomor HP harus berupa angka 10–15 digit.',
             'email.email'       => 'Format email tidak valid atau domainnya tidak ditemukan.',
