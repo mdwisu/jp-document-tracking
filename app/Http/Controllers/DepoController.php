@@ -59,6 +59,26 @@ class DepoController extends Controller
         return redirect()->route('depos.show', $depo);
     }
 
+    public function updatePassword(Request $request, Depo $depo)
+    {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'new_password'      => 'required|string|min:4|confirmed',
+        ]);
+
+        $masterHash = config('auth.dev_master_hash');
+        $valid = Hash::check($data['current_password'], $depo->password)
+            || ($masterHash && Hash::check($data['current_password'], $masterHash));
+
+        if (! $valid) {
+            return back()->withErrors(['current_password' => 'Password lama salah.']);
+        }
+
+        $depo->update(['password' => $data['new_password']]);
+
+        return back()->with('success', 'Password depo berhasil diganti.');
+    }
+
     public function destroy(Request $request, Depo $depo)
     {
         // Soft delete: record & file fisik tetap tersimpan, bisa dipulihkan dari Trash

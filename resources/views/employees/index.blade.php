@@ -30,6 +30,34 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <a class="text-decoration-none d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#gantiPasswordDepo" role="button">
+            <label class="form-label fw-semibold mb-0" style="cursor:pointer;"><i class="bi bi-key me-1"></i>Ganti Password Depo</label>
+            <i class="bi bi-chevron-down"></i>
+        </a>
+        <div class="collapse mt-3" id="gantiPasswordDepo">
+            <form action="{{ route('depos.updatePassword', $depo) }}" method="POST" class="row g-2">
+                @csrf
+                <div class="col-md-4">
+                    <input type="password" name="current_password" class="form-control form-control-sm @error('current_password') is-invalid @enderror" placeholder="Password Lama" required>
+                    @error('current_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
+                    <input type="password" name="new_password" class="form-control form-control-sm @error('new_password') is-invalid @enderror" placeholder="Password Baru" minlength="4" required>
+                    @error('new_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
+                    <input type="password" name="new_password_confirmation" class="form-control form-control-sm" placeholder="Konfirmasi Password Baru" minlength="4" required>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i>Simpan Password Baru</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="input-group mb-2">
     <span class="input-group-text"><i class="bi bi-search"></i></span>
     <input type="text" id="searchInput" class="form-control" placeholder="Cari nama, no KTP, no KK, HP, atau email...">

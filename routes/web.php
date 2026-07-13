@@ -52,6 +52,7 @@ Route::middleware('vehicles.unlocked')->group(function () {
 // Sisi admin — butuh password depo
 Route::middleware('depo.unlocked')->group(function () {
     Route::get('/depos/{depo}', [EmployeeController::class, 'index'])->name('depos.show');
+    Route::post('/depos/{depo}/password', [DepoController::class, 'updatePassword'])->name('depos.updatePassword');
     Route::delete('/depos/{depo}', [DepoController::class, 'destroy'])->name('depos.destroy');
 
     Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
