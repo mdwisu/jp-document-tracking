@@ -57,6 +57,15 @@ return [
             'report' => false,
         ],
 
+        // Disk khusus berkas mobil (barcode/STNK/KIR/pajak). Sama polanya dengan
+        // employee_files — arahkan ke network share di produksi via VEHICLE_FILES_ROOT.
+        'vehicle_files' => [
+            'driver' => 'local',
+            'root' => env('VEHICLE_FILES_ROOT', storage_path('app/private')),
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

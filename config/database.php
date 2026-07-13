@@ -114,6 +114,21 @@ return [
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'yes'),
         ],
 
+        // Koneksi read-only ke database logistik (LOG_BO_PROD) — data master mobil, isi bensin, dll.
+        'logbo' => [
+            'driver' => 'sqlsrv',
+            'host' => env('LOGBO_DB_HOST', 'localhost'),
+            'port' => env('LOGBO_DB_PORT', '1433'),
+            'database' => env('LOGBO_DB_DATABASE', 'LOG_BO_PROD'),
+            'username' => env('LOGBO_DB_USERNAME', 'root'),
+            'password' => env('LOGBO_DB_PASSWORD', ''),
+            'charset' => env('LOGBO_DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'encrypt' => env('LOGBO_DB_ENCRYPT', 'no'),
+            'trust_server_certificate' => env('LOGBO_DB_TRUST_SERVER_CERTIFICATE', 'yes'),
+        ],
+
     ],
 
     /*

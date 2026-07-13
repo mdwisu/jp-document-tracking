@@ -20,6 +20,9 @@
             <a class="navbar-brand" href="{{ route('depos.index') }}">
                 <i class="bi bi-archive-fill me-2"></i>JP Document Tracking
             </a>
+            <div class="navbar-nav flex-row ms-auto">
+                <a class="nav-link px-2" href="{{ route('vehicles.index') }}"><i class="bi bi-truck me-1"></i>Data Mobil</a>
+            </div>
         </div>
     </nav>
     <div class="container pb-5">

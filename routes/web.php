@@ -3,6 +3,7 @@
 use App\Http\Controllers\DepoController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TrashController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DepoController::class, 'index'])->name('depos.index');
@@ -25,6 +26,16 @@ Route::middleware('master.unlocked')->group(function () {
     Route::post('/trash/employees/{id}/restore', [TrashController::class, 'restoreEmployee'])->name('trash.restoreEmployee');
     Route::delete('/trash/employees/{id}', [TrashController::class, 'forceDeleteEmployee'])->name('trash.forceDeleteEmployee');
 });
+
+// Data mobil (divisi logistik) — belum pakai password
+Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
+Route::get('/vehicles/search-mobil', [VehicleController::class, 'searchMobil'])->name('vehicles.searchMobil');
+Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+Route::get('/vehicle-files/{file}/download', [VehicleController::class, 'download'])->name('vehicleFiles.download');
+Route::get('/vehicle-files/{file}/preview', [VehicleController::class, 'preview'])->name('vehicleFiles.preview');
 
 // Sisi admin — butuh password depo
 Route::middleware('depo.unlocked')->group(function () {
