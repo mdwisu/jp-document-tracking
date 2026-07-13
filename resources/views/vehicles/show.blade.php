@@ -39,8 +39,7 @@
                 </tr></thead>
                 <tbody>
                     @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak'] as $type => $label)
-                        @php($f = $vehicle->fileOfType($type))
-                        @php($expiryField = 'tanggal_jatuh_tempo_' . $type)
+                        @php($f = $vehicle->currentFileOfType($type))
                         <tr>
                             <td class="ps-3 fw-semibold">{{ $label }}</td>
                             @if($f)
@@ -49,8 +48,8 @@
                                     @if($type === 'barcode')
                                         <span class="text-muted">-</span>
                                     @else
-                                        {{ $vehicle->$expiryField?->format('d M Y') ?? '-' }}
-                                        @php($status = $vehicle->expiryStatus($expiryField))
+                                        {{ $f->expiry_date?->format('d M Y') ?? '-' }}
+                                        @php($status = $vehicle->expiryStatus($type))
                                         @if($status === 'expired')
                                             <span class="badge bg-danger-subtle text-danger ms-1">Kadaluarsa</span>
                                         @elseif($status === 'soon')
@@ -75,6 +74,55 @@
                 </tbody>
             </table>
         </div></div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h6 class="text-muted text-uppercase small mb-3">Riwayat Dokumen</h6>
+        <div class="accordion" id="historyAccordion">
+            @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak'] as $type => $label)
+                @php($history = $vehicle->historyOfType($type))
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#history-{{ $type }}">
+                            {{ $label }} <span class="badge bg-secondary-subtle text-secondary ms-2">{{ $history->count() }} versi</span>
+                        </button>
+                    </h2>
+                    <div id="history-{{ $type }}" class="accordion-collapse collapse" data-bs-parent="#historyAccordion">
+                        <div class="accordion-body p-0">
+                            @if($history->isEmpty())
+                                <p class="text-muted small p-3 mb-0">Belum ada riwayat.</p>
+                            @else
+                                <table class="table table-sm mb-0 align-middle">
+                                    <thead><tr>
+                                        <th class="ps-3">Nama File</th>
+                                        <th>Diupload</th>
+                                        <th>Jatuh Tempo</th>
+                                        <th></th>
+                                    </tr></thead>
+                                    <tbody>
+                                        @foreach($history as $f)
+                                            <tr>
+                                                <td class="ps-3">{{ $f->original_filename }}</td>
+                                                <td>{{ $f->created_at->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</td>
+                                                <td>{{ $f->expiry_date?->format('d M Y') ?? '-' }}</td>
+                                                <td class="text-end pe-3">
+                                                    <div class="d-inline-flex gap-2 flex-nowrap">
+                                                        <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
+                                                        <a href="{{ route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 </div>
 @endsection

@@ -17,6 +17,11 @@ class VehicleFile extends Model
         'stored_filename',
         'file_path',
         'file_size',
+        'expiry_date',
+    ];
+
+    protected $casts = [
+        'expiry_date' => 'date',
     ];
 
     public function vehicle(): BelongsTo

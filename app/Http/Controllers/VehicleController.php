@@ -97,6 +97,8 @@ class VehicleController extends Controller
 
     /**
      * Pencarian AJAX ke database logistik (LOG_BO_PROD) berdasarkan No Polisi / Kode Mobil.
+     * Menyertakan mobil yang sudah tercatat juga (ditandai `tracked`), supaya staf bisa
+     * langsung pilih mobil lama untuk update dokumen, bukan cuma mobil baru.
      */
     public function searchMobil(Request $request, string $token)
     {
@@ -108,88 +110,116 @@ class VehicleController extends Controller
             return response()->json([]);
         }
 
-        $trackedIds = Vehicle::pluck('mobil_id')->all();
-
         $results = Mobil::where('SoftDelete', 0)
             ->where(fn ($query) => $query
                 ->where('NoPolisi', 'like', "%{$q}%")
                 ->orWhere('KodeMobil', 'like', "%{$q}%"))
-            ->when(! empty($trackedIds), fn ($query) => $query->whereNotIn('MobilId', $trackedIds))
             ->orderBy('NoPolisi')
             ->limit(20)
             ->get(['MobilId', 'KodeMobil', 'NoPolisi', 'KodeDepo']);
 
+        $trackedIds = Vehicle::whereIn('mobil_id', $results->pluck('MobilId'))->pluck('mobil_id')->all();
+
         return response()->json($results->map(fn ($m) => [
-            'mobil_id'  => $m->MobilId,
+            'mobil_id'   => $m->MobilId,
             'kode_mobil' => $m->KodeMobil,
-            'no_polisi' => $m->NoPolisi,
-            'kode_depo' => $m->KodeDepo,
+            'no_polisi'  => $m->NoPolisi,
+            'kode_depo'  => $m->KodeDepo,
+            'tracked'    => in_array($m->MobilId, $trackedIds, true),
         ]));
     }
 
-    public function store(Request $request, string $token)
+    /**
+     * Status dokumen (aktif saat ini) untuk 1 mobil, dipakai untuk mengisi 4 mini-form
+     * di halaman tambah/update dokumen setelah staf memilih mobil dari hasil pencarian.
+     */
+    public function documentStatus(Request $request, string $token, string $mobilId)
+    {
+        $this->assertValidToken($token);
+
+        $vehicle = Vehicle::where('mobil_id', $mobilId)->with('files')->first();
+
+        $documents = collect(self::FILE_TYPES)->mapWithKeys(function (string $type) use ($vehicle) {
+            $current = $vehicle?->currentFileOfType($type);
+
+            return [$type => $current ? [
+                'original_filename' => $current->original_filename,
+                'expiry_date'       => $current->expiry_date?->format('Y-m-d'),
+                'uploaded_at'       => $current->created_at->timezone('Asia/Jakarta')->format('d M Y H:i'),
+            ] : null];
+        });
+
+        return response()->json($documents);
+    }
+
+    /**
+     * Simpan 1 dokumen (barcode/STNK/KIR/pajak) untuk 1 mobil. Selalu menambah baris baru
+     * (riwayat/append-only) — tidak pernah menimpa dokumen versi sebelumnya. Kalau mobil ini
+     * belum pernah disentuh sama sekali, baris `vehicles` dibuat otomatis di sini.
+     */
+    public function saveDocument(Request $request, string $token)
     {
         $this->assertValidToken($token);
 
         $data = $request->validate([
-            'mobil_id'   => ['required', 'uuid', \Illuminate\Validation\Rule::unique('vehicles', 'mobil_id')->whereNull('deleted_at')],
-            'kode_mobil' => 'required|string|max:50',
-            'no_polisi'  => 'required|string|max:20',
-            'kode_depo'  => 'nullable|string|max:20',
-            'tanggal_jatuh_tempo_stnk'  => 'required|date',
-            'tanggal_jatuh_tempo_kir'   => 'required|date',
-            'tanggal_jatuh_tempo_pajak' => 'required|date',
-            'barcode'    => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
-            'stnk'       => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
-            'kir'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
-            'pajak'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'mobil_id'    => 'required|uuid',
+            'kode_mobil'  => 'required|string|max:50',
+            'no_polisi'   => 'required|string|max:20',
+            'kode_depo'   => 'nullable|string|max:20',
+            'type'        => 'required|in:' . implode(',', self::FILE_TYPES),
+            'file'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'expiry_date' => 'required_unless:type,barcode|date',
         ], [
-            'mobil_id.unique' => 'Mobil ini sudah terdaftar di sistem.',
+            'expiry_date.required_unless' => 'Tanggal Jatuh Tempo wajib diisi.',
         ], [
-            'mobil_id' => 'Mobil', 'barcode' => 'berkas Barcode', 'stnk' => 'berkas STNK',
-            'kir' => 'berkas KIR', 'pajak' => 'berkas Pajak',
-            'tanggal_jatuh_tempo_stnk' => 'Tanggal Jatuh Tempo STNK',
-            'tanggal_jatuh_tempo_kir' => 'Tanggal Jatuh Tempo KIR',
-            'tanggal_jatuh_tempo_pajak' => 'Tanggal Jatuh Tempo Pajak',
+            'file' => 'berkas',
+            'expiry_date' => 'Tanggal Jatuh Tempo',
         ]);
 
-        // Pastikan mobil_id memang benar-benar ada di database logistik.
         if (! Mobil::where('MobilId', $data['mobil_id'])->where('SoftDelete', 0)->exists()) {
-            return back()->withInput()->withErrors(['mobil_id' => 'Data mobil tidak ditemukan di database logistik.']);
+            return response()->json(['message' => 'Data mobil tidak ditemukan di database logistik.'], 422);
         }
 
-        $vehicle = Vehicle::create([
-            'mobil_id'   => $data['mobil_id'],
+        $vehicle = Vehicle::firstOrCreate(
+            ['mobil_id' => $data['mobil_id']],
+            ['kode_mobil' => $data['kode_mobil'], 'no_polisi' => $data['no_polisi'], 'kode_depo' => $data['kode_depo'] ?? null]
+        );
+
+        // Refresh cache lokal mengikuti data LOG_BO_PROD terbaru yang dikirim dari form.
+        $vehicle->update([
             'kode_mobil' => $data['kode_mobil'],
             'no_polisi'  => $data['no_polisi'],
             'kode_depo'  => $data['kode_depo'] ?? null,
-            'tanggal_jatuh_tempo_stnk'  => $data['tanggal_jatuh_tempo_stnk'],
-            'tanggal_jatuh_tempo_kir'   => $data['tanggal_jatuh_tempo_kir'],
-            'tanggal_jatuh_tempo_pajak' => $data['tanggal_jatuh_tempo_pajak'],
         ]);
 
+        $file = $this->appendVehicleFile($vehicle, $data['type'], $request->file('file'), $data['expiry_date'] ?? null);
+
+        return response()->json([
+            'message'  => 'Dokumen berhasil disimpan.',
+            'document' => [
+                'original_filename' => $file->original_filename,
+                'expiry_date'       => $file->expiry_date?->format('Y-m-d'),
+                'uploaded_at'       => $file->created_at->timezone('Asia/Jakarta')->format('d M Y H:i'),
+            ],
+        ]);
+    }
+
+    private function appendVehicleFile(Vehicle $vehicle, string $type, $file, ?string $expiryDate): VehicleFile
+    {
         $slug = Str::slug($vehicle->no_polisi, '_');
+        $ext = $file->getClientOriginalExtension();
+        $displayName = "{$slug}_" . strtoupper($type) . "_" . now()->format('YmdHis') . ".{$ext}";
+        $storedName = Str::uuid() . ".{$ext}";
+        $path = $file->storeAs("vehicles/{$vehicle->id}", $storedName, 'vehicle_files');
 
-        foreach (self::FILE_TYPES as $type) {
-            $file = $request->file($type);
-            $ext = $file->getClientOriginalExtension();
-            $displayName = "{$slug}_" . strtoupper($type) . ".{$ext}";
-            $storedName = Str::uuid() . ".{$ext}";
-            $path = $file->storeAs("vehicles/{$vehicle->id}", $storedName, 'vehicle_files');
-
-            $vehicle->files()->create([
-                'type'              => $type,
-                'original_filename' => $displayName,
-                'stored_filename'   => $storedName,
-                'file_path'         => $path,
-                'file_size'         => $file->getSize(),
-            ]);
-        }
-
-        // Redirect ke form tambah (bukan halaman detail) karena pengirim link token
-        // publik ini belum tentu punya akses password ke halaman kelola/detail mobil.
-        return redirect()->route('vehicles.create', $token)
-            ->with('success', "Data mobil \"{$vehicle->no_polisi}\" berhasil disimpan.");
+        return $vehicle->files()->create([
+            'type'              => $type,
+            'original_filename' => $displayName,
+            'stored_filename'   => $storedName,
+            'file_path'         => $path,
+            'file_size'         => $file->getSize(),
+            'expiry_date'       => $expiryDate,
+        ]);
     }
 
     public function show(Vehicle $vehicle)

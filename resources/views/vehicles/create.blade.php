@@ -2,78 +2,56 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
+    <div class="col-md-9">
+        <div class="card mb-3">
             <div class="card-body">
-                <h5 class="mb-3"><i class="bi bi-truck me-2"></i>Tambah Data Mobil</h5>
+                <h5 class="mb-3"><i class="bi bi-truck me-2"></i>Tambah / Update Dokumen Mobil</h5>
+                <p class="text-muted small">Cari mobil, lalu isi dokumen yang mau ditambah/diganti. Tiap dokumen bisa diisi satu-satu — tidak perlu isi semuanya sekaligus. Setiap kali diganti, versi lama tetap tersimpan sebagai riwayat.</p>
 
-                <form action="{{ route('vehicles.store', $token) }}" method="POST" enctype="multipart/form-data" onsubmit="return document.getElementById('mobil_id').value !== '' || (alert('Pilih mobil terlebih dahulu dari hasil pencarian.'), false);">
-                    @csrf
+                <div class="mb-3">
+                    <label class="form-label">Cari Mobil (No Polisi / Kode Mobil)</label>
+                    <input type="text" id="mobilSearch" class="form-control" placeholder="Ketik minimal 2 karakter, mis. B 1180 atau MBL-000252" autocomplete="off">
+                    <div id="mobilResults" class="list-group mt-1"></div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Cari Mobil (No Polisi / Kode Mobil)</label>
-                        <input type="text" id="mobilSearch" class="form-control" placeholder="Ketik minimal 2 karakter, mis. B 1180 atau MBL-000252" autocomplete="off">
-                        <div id="mobilResults" class="list-group mt-1"></div>
-                        @error('mobil_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
+                <div id="mobilSelected" class="alert alert-success d-none">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Mobil terpilih: <strong id="mobilSelectedLabel"></strong>
+                    <button type="button" class="btn btn-sm btn-outline-secondary float-end" onclick="clearMobilSelection()">Ganti Mobil</button>
+                </div>
+            </div>
+        </div>
 
-                    <div id="mobilSelected" class="alert alert-success d-none">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Mobil terpilih: <strong id="mobilSelectedLabel"></strong>
-                        <button type="button" class="btn btn-sm btn-outline-secondary float-end" onclick="clearMobilSelection()">Ganti</button>
-                    </div>
-
-                    <input type="hidden" name="mobil_id" id="mobil_id" value="{{ old('mobil_id') }}">
-                    <input type="hidden" name="kode_mobil" id="kode_mobil" value="{{ old('kode_mobil') }}">
-                    <input type="hidden" name="no_polisi" id="no_polisi" value="{{ old('no_polisi') }}">
-                    <input type="hidden" name="kode_depo" id="kode_depo" value="{{ old('kode_depo') }}">
-
-                    <hr>
-                    <p class="text-muted small mb-3">Unggah berkas (PDF/JPG/PNG, maks 20 MB).</p>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Upload Barcode</label>
-                            <input type="file" name="barcode" class="form-control @error('barcode') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
-                            @error('barcode')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-6 mb-3"></div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Upload STNK</label>
-                            <input type="file" name="stnk" class="form-control @error('stnk') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
-                            @error('stnk')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tanggal Jatuh Tempo STNK</label>
-                            <input type="date" name="tanggal_jatuh_tempo_stnk" class="form-control @error('tanggal_jatuh_tempo_stnk') is-invalid @enderror" value="{{ old('tanggal_jatuh_tempo_stnk') }}" required>
-                            @error('tanggal_jatuh_tempo_stnk')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Upload KIR</label>
-                            <input type="file" name="kir" class="form-control @error('kir') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
-                            @error('kir')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tanggal Jatuh Tempo KIR</label>
-                            <input type="date" name="tanggal_jatuh_tempo_kir" class="form-control @error('tanggal_jatuh_tempo_kir') is-invalid @enderror" value="{{ old('tanggal_jatuh_tempo_kir') }}" required>
-                            @error('tanggal_jatuh_tempo_kir')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Upload Pajak</label>
-                            <input type="file" name="pajak" class="form-control @error('pajak') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
-                            @error('pajak')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tanggal Jatuh Tempo Pajak</label>
-                            <input type="date" name="tanggal_jatuh_tempo_pajak" class="form-control @error('tanggal_jatuh_tempo_pajak') is-invalid @enderror" value="{{ old('tanggal_jatuh_tempo_pajak') }}" required>
-                            @error('tanggal_jatuh_tempo_pajak')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div id="documentForms" class="d-none">
+            @php($docTypes = ['barcode' => ['label' => 'Barcode', 'hasDate' => false], 'stnk' => ['label' => 'STNK', 'hasDate' => true], 'kir' => ['label' => 'KIR', 'hasDate' => true], 'pajak' => ['label' => 'Pajak', 'hasDate' => true]])
+            <div class="row g-3">
+                @foreach($docTypes as $type => $meta)
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="mb-2">{{ $meta['label'] }}</h6>
+                                <div class="small text-muted mb-2" id="current-{{ $type }}">Belum ada data.</div>
+                                <form class="doc-form" data-type="{{ $type }}" data-has-date="{{ $meta['hasDate'] ? '1' : '0' }}">
+                                    @csrf
+                                    <div class="mb-2">
+                                        <label class="form-label small">Upload {{ $meta['label'] }}</label>
+                                        <input type="file" name="file" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                                    </div>
+                                    @if($meta['hasDate'])
+                                        <div class="mb-2">
+                                            <label class="form-label small">Tanggal Jatuh Tempo</label>
+                                            <input type="date" name="expiry_date" class="form-control form-control-sm" required>
+                                        </div>
+                                    @endif
+                                    <div class="invalid-feedback-box text-danger small mb-2 d-none"></div>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-upload me-1"></i>Simpan {{ $meta['label'] }}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Simpan</button>
-                </form>
+                @endforeach
             </div>
         </div>
     </div>
@@ -83,10 +61,17 @@
 @push('scripts')
 <script>
 (function(){
+    var token = @json($token);
+    var searchUrl = @json(route('vehicles.searchMobil', $token));
+    var statusUrlBase = @json(route('vehicles.documentStatus', [$token, '__MOBIL_ID__']));
+    var saveUrl = @json(route('vehicles.saveDocument', $token));
+
     var searchInput = document.getElementById('mobilSearch');
     var resultsBox = document.getElementById('mobilResults');
     var selectedBox = document.getElementById('mobilSelected');
     var selectedLabel = document.getElementById('mobilSelectedLabel');
+    var documentForms = document.getElementById('documentForms');
+    var selected = null;
     var timer = null;
 
     searchInput.addEventListener('input', function(){
@@ -96,7 +81,7 @@
         if (q.length < 2) return;
 
         timer = setTimeout(function(){
-            fetch("{{ route('vehicles.searchMobil', $token) }}?q=" + encodeURIComponent(q))
+            fetch(searchUrl + '?q=' + encodeURIComponent(q))
                 .then(function(r){ return r.json(); })
                 .then(function(items){
                     resultsBox.innerHTML = '';
@@ -108,7 +93,8 @@
                         var btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action';
-                        btn.innerHTML = '<strong>' + item.no_polisi + '</strong> &middot; ' + item.kode_mobil + (item.kode_depo ? ' &middot; Depo ' + item.kode_depo : '');
+                        var trackedBadge = item.tracked ? ' <span class="badge bg-info-subtle text-info">Sudah tercatat</span>' : '';
+                        btn.innerHTML = '<strong>' + item.no_polisi + '</strong> &middot; ' + item.kode_mobil + (item.kode_depo ? ' &middot; Depo ' + item.kode_depo : '') + trackedBadge;
                         btn.onclick = function(){ selectMobil(item); };
                         resultsBox.appendChild(btn);
                     });
@@ -116,24 +102,99 @@
         }, 300);
     });
 
-    window.selectMobil = function(item){
-        document.getElementById('mobil_id').value = item.mobil_id;
-        document.getElementById('kode_mobil').value = item.kode_mobil;
-        document.getElementById('no_polisi').value = item.no_polisi;
-        document.getElementById('kode_depo').value = item.kode_depo || '';
+    function selectMobil(item){
+        selected = item;
         selectedLabel.textContent = item.no_polisi + ' (' + item.kode_mobil + ')';
         selectedBox.classList.remove('d-none');
         searchInput.value = '';
         resultsBox.innerHTML = '';
-    };
+        documentForms.classList.remove('d-none');
+        document.querySelectorAll('.doc-form').forEach(resetDocForm);
+        loadDocumentStatus(item.mobil_id);
+    }
 
     window.clearMobilSelection = function(){
-        document.getElementById('mobil_id').value = '';
-        document.getElementById('kode_mobil').value = '';
-        document.getElementById('no_polisi').value = '';
-        document.getElementById('kode_depo').value = '';
+        selected = null;
         selectedBox.classList.add('d-none');
+        documentForms.classList.add('d-none');
     };
+
+    function loadDocumentStatus(mobilId){
+        var url = statusUrlBase.replace('__MOBIL_ID__', mobilId);
+        fetch(url)
+            .then(function(r){ return r.json(); })
+            .then(function(status){
+                Object.keys(status).forEach(function(type){
+                    var el = document.getElementById('current-' + type);
+                    var doc = status[type];
+                    if (!doc) {
+                        el.textContent = 'Belum ada data.';
+                        return;
+                    }
+                    var text = 'Saat ini: ' + doc.original_filename + ' (upload ' + doc.uploaded_at + ')';
+                    if (doc.expiry_date) {
+                        text += ' — jatuh tempo ' + doc.expiry_date;
+                    }
+                    el.textContent = text;
+                });
+            });
+    }
+
+    document.querySelectorAll('.doc-form').forEach(function(form){
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            if (!selected) {
+                alert('Pilih mobil terlebih dahulu.');
+                return;
+            }
+
+            var type = form.dataset.type;
+            var errorBox = form.querySelector('.invalid-feedback-box');
+            errorBox.classList.add('d-none');
+            errorBox.textContent = '';
+
+            var formData = new FormData(form);
+            formData.append('mobil_id', selected.mobil_id);
+            formData.append('kode_mobil', selected.kode_mobil);
+            formData.append('no_polisi', selected.no_polisi);
+            formData.append('kode_depo', selected.kode_depo || '');
+            formData.append('type', type);
+
+            var submitBtn = form.querySelector('button[type=submit]');
+            submitBtn.disabled = true;
+
+            fetch(saveUrl, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: formData,
+            })
+            .then(function(r){ return r.json().then(function(body){ return { ok: r.ok, body: body }; }); })
+            .then(function(result){
+                submitBtn.disabled = false;
+                if (!result.ok) {
+                    var messages = result.body.errors ? Object.values(result.body.errors).flat().join(' ') : (result.body.message || 'Gagal menyimpan.');
+                    errorBox.textContent = messages;
+                    errorBox.classList.remove('d-none');
+                    return;
+                }
+                selected.tracked = true;
+                resetDocForm(form);
+                loadDocumentStatus(selected.mobil_id);
+            })
+            .catch(function(){
+                submitBtn.disabled = false;
+                errorBox.textContent = 'Terjadi kesalahan jaringan, coba lagi.';
+                errorBox.classList.remove('d-none');
+            });
+        });
+    });
+
+    function resetDocForm(form){
+        form.reset();
+        var errorBox = form.querySelector('.invalid-feedback-box');
+        errorBox.classList.add('d-none');
+        errorBox.textContent = '';
+    }
 })();
 </script>
 @endpush

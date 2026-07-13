@@ -15,22 +15,9 @@ class Vehicle extends Model
         'kode_mobil',
         'no_polisi',
         'kode_depo',
-        'tanggal_jatuh_tempo_stnk',
-        'tanggal_jatuh_tempo_kir',
-        'tanggal_jatuh_tempo_pajak',
     ];
 
-    protected $casts = [
-        'tanggal_jatuh_tempo_stnk'  => 'date',
-        'tanggal_jatuh_tempo_kir'   => 'date',
-        'tanggal_jatuh_tempo_pajak' => 'date',
-    ];
-
-    private const EXPIRY_FIELDS = [
-        'tanggal_jatuh_tempo_stnk',
-        'tanggal_jatuh_tempo_kir',
-        'tanggal_jatuh_tempo_pajak',
-    ];
+    private const EXPIRY_TYPES = ['stnk', 'kir', 'pajak'];
 
     protected static function booted(): void
     {
@@ -46,14 +33,31 @@ class Vehicle extends Model
         return $this->hasMany(VehicleFile::class);
     }
 
-    public function fileOfType(string $type): ?VehicleFile
+    /**
+     * Baris VehicleFile terbaru untuk jenis dokumen tertentu (versi yang berlaku saat ini).
+     */
+    public function currentFileOfType(string $type): ?VehicleFile
     {
-        return $this->files->firstWhere('type', $type);
+        return $this->files
+            ->where('type', $type)
+            ->sortByDesc('created_at')
+            ->first();
     }
 
-    public function expiryStatus(string $field): ?string
+    /**
+     * Semua versi dokumen jenis tertentu, terbaru duluan (untuk tampilan riwayat).
+     */
+    public function historyOfType(string $type)
     {
-        $date = $this->$field;
+        return $this->files
+            ->where('type', $type)
+            ->sortByDesc('created_at')
+            ->values();
+    }
+
+    public function expiryStatus(string $type): ?string
+    {
+        $date = $this->currentFileOfType($type)?->expiry_date;
 
         if (! $date) {
             return null;
@@ -72,7 +76,7 @@ class Vehicle extends Model
 
     public function worstExpiryStatus(): ?string
     {
-        $statuses = collect(self::EXPIRY_FIELDS)->map(fn ($field) => $this->expiryStatus($field));
+        $statuses = collect(self::EXPIRY_TYPES)->map(fn ($type) => $this->expiryStatus($type));
 
         if ($statuses->contains('expired')) {
             return 'expired';

@@ -28,10 +28,12 @@ Route::middleware('master.unlocked')->group(function () {
 });
 
 // Data mobil (divisi logistik)
-// Tambah mobil — publik via token acak (dibagikan ke staf logistik), tanpa password
+// Tambah/update dokumen mobil — publik via token acak (dibagikan ke staf logistik), tanpa password.
+// Tiap submit menambah riwayat baru (append-only), tidak menimpa dokumen versi sebelumnya.
 Route::get('/vehicles/tambah/{token}', [VehicleController::class, 'create'])->name('vehicles.create');
-Route::post('/vehicles/tambah/{token}', [VehicleController::class, 'store'])->name('vehicles.store');
 Route::get('/vehicles/tambah/{token}/cari-mobil', [VehicleController::class, 'searchMobil'])->name('vehicles.searchMobil');
+Route::get('/vehicles/tambah/{token}/dokumen/{mobilId}', [VehicleController::class, 'documentStatus'])->name('vehicles.documentStatus');
+Route::post('/vehicles/tambah/{token}/dokumen', [VehicleController::class, 'saveDocument'])->name('vehicles.saveDocument');
 
 Route::get('/vehicles/unlock', [VehicleController::class, 'unlockForm'])->name('vehicles.unlockForm');
 Route::post('/vehicles/unlock', [VehicleController::class, 'unlock'])->name('vehicles.unlock');
