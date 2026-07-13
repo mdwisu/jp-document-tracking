@@ -38,10 +38,16 @@
                     <th></th>
                 </tr></thead>
                 <tbody>
+                    @php($docPeriods = ['stnk' => '5 tahun', 'pajak' => '1 tahun'])
                     @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak'] as $type => $label)
                         @php($f = $vehicle->currentFileOfType($type))
                         <tr>
-                            <td class="ps-3 fw-semibold">{{ $label }}</td>
+                            <td class="ps-3 fw-semibold">
+                                {{ $label }}
+                                @if(isset($docPeriods[$type]))
+                                    <div class="fw-normal text-muted" style="font-size:0.75rem;">Masa berlaku {{ $docPeriods[$type] }}</div>
+                                @endif
+                            </td>
                             @if($f)
                                 <td>{{ $f->original_filename }}</td>
                                 <td>

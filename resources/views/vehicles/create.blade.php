@@ -23,7 +23,7 @@
         </div>
 
         <div id="documentForms" class="d-none">
-            @php($docTypes = ['barcode' => ['label' => 'Barcode', 'hasDate' => false], 'stnk' => ['label' => 'STNK', 'hasDate' => true], 'kir' => ['label' => 'KIR', 'hasDate' => true], 'pajak' => ['label' => 'Pajak', 'hasDate' => true]])
+            @php($docTypes = ['barcode' => ['label' => 'Barcode', 'hasDate' => false], 'stnk' => ['label' => 'STNK', 'hasDate' => true, 'period' => 'Masa berlaku STNK 5 tahun'], 'kir' => ['label' => 'KIR', 'hasDate' => true], 'pajak' => ['label' => 'Pajak', 'hasDate' => true, 'period' => 'Masa berlaku Pajak 1 tahun']])
             <div class="row g-3">
                 @foreach($docTypes as $type => $meta)
                     <div class="col-md-6">
@@ -41,6 +41,9 @@
                                         <div class="mb-2">
                                             <label class="form-label small">Tanggal Jatuh Tempo</label>
                                             <input type="date" name="expiry_date" class="form-control form-control-sm" required>
+                                            @if(!empty($meta['period']))
+                                                <div class="form-text">{{ $meta['period'] }} sejak tanggal terbit/perpanjangan.</div>
+                                            @endif
                                         </div>
                                     @endif
                                     <div class="invalid-feedback-box text-danger small mb-2 d-none"></div>
