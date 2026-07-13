@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Mobil;
 use App\Models\Vehicle;
 use App\Models\VehicleFile;
+use App\Models\VehicleSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -24,19 +26,82 @@ class VehicleController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('vehicles.index', compact('vehicles', 'search'));
+        $createToken = VehicleSetting::current()->create_token;
+
+        return view('vehicles.index', compact('vehicles', 'search', 'createToken'));
     }
 
-    public function create()
+    public function unlockForm()
     {
-        return view('vehicles.create');
+        return view('vehicles.unlock');
+    }
+
+    public function unlock(Request $request)
+    {
+        $request->validate(['password' => 'required|string']);
+
+        if (! Hash::check($request->input('password'), VehicleSetting::current()->password_hash)) {
+            return back()->withErrors(['password' => 'Password salah.']);
+        }
+
+        $request->session()->put('vehicles_unlocked', true);
+
+        return redirect()->route('vehicles.index');
+    }
+
+    public function settings()
+    {
+        $createToken = VehicleSetting::current()->create_token;
+
+        return view('vehicles.settings', compact('createToken'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'new_password'      => 'required|string|min:4|confirmed',
+        ]);
+
+        $setting = VehicleSetting::current();
+
+        if (! Hash::check($data['current_password'], $setting->password_hash)) {
+            return back()->withErrors(['current_password' => 'Password lama salah.']);
+        }
+
+        $setting->update(['password_hash' => $data['new_password']]);
+
+        return back()->with('success', 'Password berhasil diganti.');
+    }
+
+    public function regenerateToken(Request $request)
+    {
+        VehicleSetting::current()->update(['create_token' => Str::random(40)]);
+
+        return back()->with('success', 'Link "Tambah Mobil" berhasil diperbarui. Link lama tidak berlaku lagi.');
+    }
+
+    private function assertValidToken(string $token): void
+    {
+        if (! hash_equals(VehicleSetting::current()->create_token, $token)) {
+            abort(404);
+        }
+    }
+
+    public function create(string $token)
+    {
+        $this->assertValidToken($token);
+
+        return view('vehicles.create', compact('token'));
     }
 
     /**
      * Pencarian AJAX ke database logistik (LOG_BO_PROD) berdasarkan No Polisi / Kode Mobil.
      */
-    public function searchMobil(Request $request)
+    public function searchMobil(Request $request, string $token)
     {
+        $this->assertValidToken($token);
+
         $q = trim((string) $request->get('q', ''));
 
         if (mb_strlen($q) < 2) {
@@ -62,8 +127,10 @@ class VehicleController extends Controller
         ]));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, string $token)
     {
+        $this->assertValidToken($token);
+
         $data = $request->validate([
             'mobil_id'   => ['required', 'uuid', \Illuminate\Validation\Rule::unique('vehicles', 'mobil_id')->whereNull('deleted_at')],
             'kode_mobil' => 'required|string|max:50',
@@ -119,7 +186,9 @@ class VehicleController extends Controller
             ]);
         }
 
-        return redirect()->route('vehicles.show', $vehicle)
+        // Redirect ke form tambah (bukan halaman detail) karena pengirim link token
+        // publik ini belum tentu punya akses password ke halaman kelola/detail mobil.
+        return redirect()->route('vehicles.create', $token)
             ->with('success', "Data mobil \"{$vehicle->no_polisi}\" berhasil disimpan.");
     }
 

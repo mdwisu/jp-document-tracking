@@ -27,15 +27,25 @@ Route::middleware('master.unlocked')->group(function () {
     Route::delete('/trash/employees/{id}', [TrashController::class, 'forceDeleteEmployee'])->name('trash.forceDeleteEmployee');
 });
 
-// Data mobil (divisi logistik) — belum pakai password
-Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
-Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
-Route::get('/vehicles/search-mobil', [VehicleController::class, 'searchMobil'])->name('vehicles.searchMobil');
-Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
-Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
-Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
-Route::get('/vehicle-files/{file}/download', [VehicleController::class, 'download'])->name('vehicleFiles.download');
-Route::get('/vehicle-files/{file}/preview', [VehicleController::class, 'preview'])->name('vehicleFiles.preview');
+// Data mobil (divisi logistik)
+// Tambah mobil — publik via token acak (dibagikan ke staf logistik), tanpa password
+Route::get('/vehicles/tambah/{token}', [VehicleController::class, 'create'])->name('vehicles.create');
+Route::post('/vehicles/tambah/{token}', [VehicleController::class, 'store'])->name('vehicles.store');
+Route::get('/vehicles/tambah/{token}/cari-mobil', [VehicleController::class, 'searchMobil'])->name('vehicles.searchMobil');
+
+Route::get('/vehicles/unlock', [VehicleController::class, 'unlockForm'])->name('vehicles.unlockForm');
+Route::post('/vehicles/unlock', [VehicleController::class, 'unlock'])->name('vehicles.unlock');
+
+Route::middleware('vehicles.unlocked')->group(function () {
+    Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/vehicles/settings', [VehicleController::class, 'settings'])->name('vehicles.settings');
+    Route::post('/vehicles/settings/password', [VehicleController::class, 'updatePassword'])->name('vehicles.updatePassword');
+    Route::post('/vehicles/settings/regenerate-token', [VehicleController::class, 'regenerateToken'])->name('vehicles.regenerateToken');
+    Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+    Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    Route::get('/vehicle-files/{file}/download', [VehicleController::class, 'download'])->name('vehicleFiles.download');
+    Route::get('/vehicle-files/{file}/preview', [VehicleController::class, 'preview'])->name('vehicleFiles.preview');
+});
 
 // Sisi admin — butuh password depo
 Route::middleware('depo.unlocked')->group(function () {

@@ -3,9 +3,14 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Data Mobil</h4>
-    <a href="{{ route('vehicles.create') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg me-1"></i>Tambah Mobil
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('vehicles.settings') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-gear me-1"></i>Pengaturan
+        </a>
+        <a href="{{ route('vehicles.create', $createToken) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Tambah Mobil
+        </a>
+    </div>
 </div>
 
 <form method="GET" class="mb-3">

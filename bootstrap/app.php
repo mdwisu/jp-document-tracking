@@ -12,8 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'depo.unlocked'   => \App\Http\Middleware\EnsureDepoUnlocked::class,
-            'master.unlocked' => \App\Http\Middleware\EnsureMasterUnlocked::class,
+            'depo.unlocked'     => \App\Http\Middleware\EnsureDepoUnlocked::class,
+            'master.unlocked'   => \App\Http\Middleware\EnsureMasterUnlocked::class,
+            'vehicles.unlocked' => \App\Http\Middleware\EnsureVehiclesUnlocked::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

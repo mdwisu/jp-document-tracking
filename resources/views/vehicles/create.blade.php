@@ -1,20 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">Data Mobil</a></li>
-        <li class="breadcrumb-item active">Tambah Mobil</li>
-    </ol>
-</nav>
-
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
                 <h5 class="mb-3"><i class="bi bi-truck me-2"></i>Tambah Data Mobil</h5>
 
-                <form action="{{ route('vehicles.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return document.getElementById('mobil_id').value !== '' || (alert('Pilih mobil terlebih dahulu dari hasil pencarian.'), false);">
+                <form action="{{ route('vehicles.store', $token) }}" method="POST" enctype="multipart/form-data" onsubmit="return document.getElementById('mobil_id').value !== '' || (alert('Pilih mobil terlebih dahulu dari hasil pencarian.'), false);">
                     @csrf
 
                     <div class="mb-3">
@@ -103,7 +96,7 @@
         if (q.length < 2) return;
 
         timer = setTimeout(function(){
-            fetch("{{ route('vehicles.searchMobil') }}?q=" + encodeURIComponent(q))
+            fetch("{{ route('vehicles.searchMobil', $token) }}?q=" + encodeURIComponent(q))
                 .then(function(r){ return r.json(); })
                 .then(function(items){
                     resultsBox.innerHTML = '';
