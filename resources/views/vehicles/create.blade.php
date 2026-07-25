@@ -97,7 +97,7 @@
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action';
                         var trackedBadge = item.tracked ? ' <span class="badge bg-info-subtle text-info">Sudah tercatat</span>' : '';
-                        btn.innerHTML = '<strong>' + item.no_polisi + '</strong> &middot; ' + item.kode_mobil + (item.kode_depo ? ' &middot; Depo ' + item.kode_depo : '') + trackedBadge;
+                        btn.innerHTML = '<strong>' + item.no_polisi + '</strong> &middot; ' + item.kode_mobil + (item.nama_depo ? ' &middot; Depo ' + item.nama_depo : '') + trackedBadge;
                         btn.onclick = function(){ selectMobil(item); };
                         resultsBox.appendChild(btn);
                     });

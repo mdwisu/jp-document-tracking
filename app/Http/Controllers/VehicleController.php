@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogboDepo;
 use App\Models\Mobil;
 use App\Models\Vehicle;
 use App\Models\VehicleFile;
@@ -26,9 +27,11 @@ class VehicleController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        $depoNames = LogboDepo::namesByCodes($vehicles->pluck('kode_depo')->all());
+
         $createToken = VehicleSetting::current()->create_token;
 
-        return view('vehicles.index', compact('vehicles', 'search', 'createToken'));
+        return view('vehicles.index', compact('vehicles', 'search', 'createToken', 'depoNames'));
     }
 
     public function export(Request $request)
@@ -41,6 +44,8 @@ class VehicleController extends Controller
                 ->orWhere('no_polisi', 'like', "%{$search}%")))
             ->orderByDesc('created_at')
             ->get();
+
+        $depoNames = LogboDepo::namesByCodes($vehicles->pluck('kode_depo')->all());
 
         $filename = 'data-mobil-' . now()->format('Ymd-His') . '.csv';
 
@@ -68,7 +73,7 @@ class VehicleController extends Controller
                 fputcsv($handle, [
                     $vehicle->kode_mobil,
                     $vehicle->no_polisi,
-                    $vehicle->kode_depo ?? '-',
+                    $depoNames[$vehicle->kode_depo] ?? $vehicle->kode_depo ?? '-',
                     $vehicle->files->count() . '/4',
                     $statusLabel[$vehicle->worstExpiryStatus()] ?? '-',
                     $vehicle->currentFileOfType('stnk')?->expiry_date?->format('Y-m-d') ?? '-',
@@ -177,12 +182,14 @@ class VehicleController extends Controller
             ->get(['MobilId', 'KodeMobil', 'NoPolisi', 'KodeDepo']);
 
         $trackedIds = Vehicle::whereIn('mobil_id', $results->pluck('MobilId'))->pluck('mobil_id')->all();
+        $depoNames = LogboDepo::namesByCodes($results->pluck('KodeDepo')->all());
 
         return response()->json($results->map(fn ($m) => [
             'mobil_id'   => $m->MobilId,
             'kode_mobil' => $m->KodeMobil,
             'no_polisi'  => $m->NoPolisi,
             'kode_depo'  => $m->KodeDepo,
+            'nama_depo'  => $depoNames[$m->KodeDepo] ?? $m->KodeDepo,
             'tracked'    => in_array($m->MobilId, $trackedIds, true),
         ]));
     }
@@ -284,7 +291,9 @@ class VehicleController extends Controller
     {
         $vehicle->load('files');
 
-        return view('vehicles.show', compact('vehicle'));
+        $depoName = LogboDepo::namesByCodes([$vehicle->kode_depo])->get($vehicle->kode_depo);
+
+        return view('vehicles.show', compact('vehicle', 'depoName'));
     }
 
     public function download(VehicleFile $file)

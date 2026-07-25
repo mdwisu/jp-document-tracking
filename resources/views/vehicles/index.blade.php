@@ -42,7 +42,7 @@
                     <tr>
                         <td class="ps-3">{{ $vehicle->kode_mobil }}</td>
                         <td class="fw-semibold">{{ $vehicle->no_polisi }}</td>
-                        <td>{{ $vehicle->kode_depo ?? '-' }}</td>
+                        <td>{{ $depoNames[$vehicle->kode_depo] ?? $vehicle->kode_depo ?? '-' }}</td>
                         <td>{{ $vehicle->files->count() }}/4</td>
                         <td>
                             @if($status === 'expired')

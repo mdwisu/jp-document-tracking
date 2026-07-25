@@ -23,7 +23,7 @@
             <dl class="row mb-0">
                 <dt class="col-5">Kode Mobil</dt><dd class="col-7">{{ $vehicle->kode_mobil }}</dd>
                 <dt class="col-5">No Polisi</dt><dd class="col-7">{{ $vehicle->no_polisi }}</dd>
-                <dt class="col-5">Depo</dt><dd class="col-7">{{ $vehicle->kode_depo ?? '-' }}</dd>
+                <dt class="col-5">Depo</dt><dd class="col-7">{{ $depoName ?? $vehicle->kode_depo ?? '-' }}</dd>
             </dl>
         </div></div>
     </div>
