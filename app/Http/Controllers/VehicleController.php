@@ -31,6 +31,58 @@ class VehicleController extends Controller
         return view('vehicles.index', compact('vehicles', 'search', 'createToken'));
     }
 
+    public function export(Request $request)
+    {
+        $search = $request->get('q');
+
+        $vehicles = Vehicle::with('files')
+            ->when($search, fn ($q) => $q->where(fn ($q2) => $q2
+                ->where('kode_mobil', 'like', "%{$search}%")
+                ->orWhere('no_polisi', 'like', "%{$search}%")))
+            ->orderByDesc('created_at')
+            ->get();
+
+        $filename = 'data-mobil-' . now()->format('Ymd-His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($vehicles) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF"); // BOM agar Excel baca UTF-8 dengan benar
+
+            fputcsv($handle, [
+                'Kode Mobil', 'No Polisi', 'Depo', 'Jumlah Berkas', 'Status Dokumen',
+                'Tanggal Jatuh Tempo STNK', 'Tanggal Jatuh Tempo KIR', 'Tanggal Jatuh Tempo Pajak',
+            ]);
+
+            $statusLabel = [
+                'expired' => 'Kadaluarsa',
+                'soon'    => 'Segera Habis',
+                'ok'      => 'Aman',
+            ];
+
+            foreach ($vehicles as $vehicle) {
+                fputcsv($handle, [
+                    $vehicle->kode_mobil,
+                    $vehicle->no_polisi,
+                    $vehicle->kode_depo ?? '-',
+                    $vehicle->files->count() . '/4',
+                    $statusLabel[$vehicle->worstExpiryStatus()] ?? '-',
+                    $vehicle->currentFileOfType('stnk')?->expiry_date?->format('Y-m-d') ?? '-',
+                    $vehicle->currentFileOfType('kir')?->expiry_date?->format('Y-m-d') ?? '-',
+                    $vehicle->currentFileOfType('pajak')?->expiry_date?->format('Y-m-d') ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function unlockForm()
     {
         return view('vehicles.unlock');

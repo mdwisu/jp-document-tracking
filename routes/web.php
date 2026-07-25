@@ -40,6 +40,7 @@ Route::post('/vehicles/unlock', [VehicleController::class, 'unlock'])->name('veh
 
 Route::middleware('vehicles.unlocked')->group(function () {
     Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/vehicles/export', [VehicleController::class, 'export'])->name('vehicles.export');
     Route::get('/vehicles/settings', [VehicleController::class, 'settings'])->name('vehicles.settings');
     Route::post('/vehicles/settings/password', [VehicleController::class, 'updatePassword'])->name('vehicles.updatePassword');
     Route::post('/vehicles/settings/regenerate-token', [VehicleController::class, 'regenerateToken'])->name('vehicles.regenerateToken');

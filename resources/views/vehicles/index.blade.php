@@ -4,6 +4,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Data Mobil</h4>
     <div class="d-flex gap-2">
+        <a href="{{ route('vehicles.export', ['q' => $search]) }}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-file-earmark-excel me-1"></i>Export
+        </a>
         <a href="{{ route('vehicles.settings') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-gear me-1"></i>Pengaturan
         </a>
