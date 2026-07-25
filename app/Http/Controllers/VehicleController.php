@@ -54,7 +54,7 @@ class VehicleController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function () use ($vehicles) {
+        $callback = function () use ($vehicles, $depoNames) {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF"); // BOM agar Excel baca UTF-8 dengan benar
 
