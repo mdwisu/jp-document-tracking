@@ -23,13 +23,20 @@
         </div>
 
         <div id="documentForms" class="d-none">
-            @php($docTypes = ['barcode' => ['label' => 'Barcode', 'hasDate' => false], 'stnk' => ['label' => 'STNK', 'hasDate' => true, 'period' => 'Masa berlaku STNK 5 tahun'], 'kir' => ['label' => 'KIR', 'hasDate' => true], 'pajak' => ['label' => 'Pajak', 'hasDate' => true, 'period' => 'Masa berlaku Pajak 1 tahun']])
+            @php($docTypes = ['barcode' => ['label' => 'Barcode', 'hasDate' => false], 'stnk' => ['label' => 'STNK', 'hasDate' => true, 'period' => 'Masa berlaku STNK 5 tahun', 'example' => 'images/examples/stnk.png'], 'kir' => ['label' => 'KIR', 'hasDate' => true, 'example' => 'images/examples/kir.png'], 'pajak' => ['label' => 'Pajak', 'hasDate' => true, 'period' => 'Masa berlaku Pajak 1 tahun', 'example' => 'images/examples/pajak.png']])
             <div class="row g-3">
                 @foreach($docTypes as $type => $meta)
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h6 class="mb-2">{{ $meta['label'] }}</h6>
+                                <h6 class="mb-2">
+                                    {{ $meta['label'] }}
+                                    @if(!empty($meta['example']))
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1 align-baseline" data-bs-toggle="modal" data-bs-target="#exampleModal-{{ $type }}">
+                                            <i class="bi bi-info-circle"></i> Lihat contoh
+                                        </button>
+                                    @endif
+                                </h6>
                                 <div class="small text-muted mb-2" id="current-{{ $type }}">Belum ada data.</div>
                                 <form class="doc-form" data-type="{{ $type }}" data-has-date="{{ $meta['hasDate'] ? '1' : '0' }}">
                                     @csrf
@@ -54,6 +61,21 @@
                             </div>
                         </div>
                     </div>
+                    @if(!empty($meta['example']))
+                        <div class="modal fade" id="exampleModal-{{ $type }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title">Contoh {{ $meta['label'] }} &amp; Letak Tanggal Jatuh Tempo</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="{{ asset($meta['example']) }}" alt="Contoh {{ $meta['label'] }}" class="img-fluid rounded border">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -155,6 +177,20 @@
             var errorBox = form.querySelector('.invalid-feedback-box');
             errorBox.classList.add('d-none');
             errorBox.textContent = '';
+
+            var fileInput = form.querySelector('input[type=file]');
+            var fileName = fileInput.files.length ? fileInput.files[0].name : '-';
+            var confirmMsg = 'Konfirmasi data ' + type.toUpperCase() + ':\n\nFile: ' + fileName;
+            if (form.dataset.hasDate === '1') {
+                var expiryInput = form.querySelector('input[name=expiry_date]');
+                var expiryVal = expiryInput.value;
+                var expiryDisplay = expiryVal ? new Date(expiryVal + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+                confirmMsg += '\nTanggal Jatuh Tempo: ' + expiryDisplay;
+            }
+            confirmMsg += '\n\nPastikan file dan tanggal sudah benar sebelum disimpan. Lanjutkan?';
+            if (!window.confirm(confirmMsg)) {
+                return;
+            }
 
             var formData = new FormData(form);
             formData.append('mobil_id', selected.mobil_id);
