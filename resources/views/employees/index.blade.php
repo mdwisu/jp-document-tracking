@@ -90,6 +90,8 @@
                 <th class="ps-3">Nama</th>
                 <th>No. KTP</th>
                 <th>No. HP</th>
+                <th>Jabatan</th>
+                <th>Divisi</th>
                 <th>Terdaftar</th>
                 <th class="text-center">Berkas</th>
                 <th></th>
@@ -100,9 +102,11 @@
                         <td class="ps-3"><a href="{{ route('employees.show', $emp) }}" class="fw-semibold text-decoration-none">{{ $emp->name }}</a></td>
                         <td>{{ $emp->ktp_number }}</td>
                         <td>{{ $emp->phone }}</td>
+                        <td>{{ $emp->jabatan ?? '-' }}</td>
+                        <td>{{ $emp->divisi ?? '-' }}</td>
                         <td class="text-nowrap small text-muted">{{ $emp->created_at->timezone('Asia/Jakarta')->format('d M Y H:i') }}</td>
                         <td class="text-center">
-                            @foreach(['ktp' => 'KTP', 'kk' => 'KK', 'penjamin' => 'Penjamin'] as $type => $label)
+                            @foreach(['ktp' => 'KTP', 'kk' => 'KK', 'penjamin' => 'Penjamin', 'ijazah' => 'Ijazah'] as $type => $label)
                                 @if($emp->fileOfType($type))
                                     <span class="badge bg-success-subtle text-success">{{ $label }}</span>
                                 @else
@@ -116,7 +120,7 @@
                     </tr>
                 @endforeach
                 <tr id="noSearchResult" class="d-none">
-                    <td colspan="6" class="text-center text-muted py-4">Tidak ada karyawan yang cocok.</td>
+                    <td colspan="8" class="text-center text-muted py-4">Tidak ada karyawan yang cocok.</td>
                 </tr>
             </tbody>
         </table>

@@ -50,23 +50,45 @@
                             @error('tanggal_mulai_kerja')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Jabatan</label>
+                            <input type="text" name="jabatan" class="form-control @error('jabatan') is-invalid @enderror" value="{{ old('jabatan') }}" required>
+                            @error('jabatan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Divisi</label>
+                            <input type="text" name="divisi" class="form-control @error('divisi') is-invalid @enderror" value="{{ old('divisi') }}" required>
+                            @error('divisi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Nomor Rekening</label>
+                            <input type="text" name="no_rekening" class="form-control @error('no_rekening') is-invalid @enderror" value="{{ old('no_rekening') }}" inputmode="numeric" required>
+                            @error('no_rekening')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
                     <hr>
                     <p class="text-muted small mb-3">Unggah berkas (PDF/JPG/PNG, maks 20 MB).</p>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Upload KTP</label>
                             <input type="file" name="ktp" class="form-control @error('ktp') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
                             @error('ktp')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Upload KK</label>
                             <input type="file" name="kk" class="form-control @error('kk') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
                             @error('kk')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Formulir Penjamin</label>
                             <input type="file" name="penjamin" class="form-control @error('penjamin') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
                             @error('penjamin')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Upload Ijazah Terakhir</label>
+                            <input type="file" name="ijazah" class="form-control @error('ijazah') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
+                            @error('ijazah')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Kirim Pendaftaran</button>

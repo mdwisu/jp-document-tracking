@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
-    private const FILE_TYPES = ['ktp', 'kk', 'penjamin'];
+    private const FILE_TYPES = ['ktp', 'kk', 'penjamin', 'ijazah'];
 
     public function index(Request $request, Depo $depo)
     {
@@ -43,9 +43,13 @@ class EmployeeController extends Controller
             'phone'      => ['required', 'regex:/^[0-9]{10,15}$/'],
             'email'      => 'required|email:rfc,dns|max:150',
             'tanggal_mulai_kerja' => 'required|date|after_or_equal:2000-01-01|before_or_equal:' . now()->addYear()->toDateString(),
+            'jabatan'    => 'required|string|max:150',
+            'divisi'     => 'required|string|max:150',
+            'no_rekening' => 'required|string|max:50',
             'ktp'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
             'kk'         => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
             'penjamin'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'ijazah'     => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
         ], [
             'ktp_number.digits'  => 'Nomor KTP harus tepat 16 digit angka.',
             'ktp_number.unique'  => 'Nomor KTP sudah terdaftar.',
@@ -58,7 +62,9 @@ class EmployeeController extends Controller
             'name' => 'Nama', 'ktp_number' => 'Nomor KTP', 'kk_number' => 'Nomor KK',
             'address' => 'Alamat', 'phone' => 'Nomor HP', 'email' => 'Email',
             'tanggal_mulai_kerja' => 'Tanggal Mulai Kerja',
+            'jabatan' => 'Jabatan', 'divisi' => 'Divisi', 'no_rekening' => 'Nomor Rekening',
             'ktp' => 'berkas KTP', 'kk' => 'berkas KK', 'penjamin' => 'Formulir Penjamin',
+            'ijazah' => 'berkas Ijazah',
         ]);
 
         $employee = $depo->employees()->create([
@@ -69,6 +75,9 @@ class EmployeeController extends Controller
             'phone'      => $data['phone'],
             'email'      => $data['email'],
             'tanggal_mulai_kerja' => $data['tanggal_mulai_kerja'],
+            'jabatan'    => $data['jabatan'],
+            'divisi'     => $data['divisi'],
+            'no_rekening' => $data['no_rekening'],
         ]);
 
         $slug = Str::slug($employee->name, '_');

@@ -20,6 +20,9 @@ class Employee extends Model
         'phone',
         'email',
         'tanggal_mulai_kerja',
+        'jabatan',
+        'divisi',
+        'no_rekening',
     ];
 
     protected $casts = [

@@ -29,6 +29,9 @@
                 <dt class="col-5">No. HP / WA</dt><dd class="col-7">{{ $employee->phone }}</dd>
                 <dt class="col-5">Email</dt><dd class="col-7">{{ $employee->email }}</dd>
                 <dt class="col-5">Mulai Kerja</dt><dd class="col-7">{{ $employee->tanggal_mulai_kerja?->timezone('Asia/Jakarta')->format('d M Y') ?? '-' }}</dd>
+                <dt class="col-5">Jabatan</dt><dd class="col-7">{{ $employee->jabatan ?? '-' }}</dd>
+                <dt class="col-5">Divisi</dt><dd class="col-7">{{ $employee->divisi ?? '-' }}</dd>
+                <dt class="col-5">No. Rekening</dt><dd class="col-7">{{ $employee->no_rekening ?? '-' }}</dd>
             </dl>
         </div></div>
     </div>
@@ -43,7 +46,7 @@
                     <th></th>
                 </tr></thead>
                 <tbody>
-                    @foreach(['ktp' => 'KTP', 'kk' => 'KK', 'penjamin' => 'Formulir Penjamin'] as $type => $label)
+                    @foreach(['ktp' => 'KTP', 'kk' => 'KK', 'penjamin' => 'Formulir Penjamin', 'ijazah' => 'Ijazah Terakhir'] as $type => $label)
                         @php($f = $employee->fileOfType($type))
                         <tr>
                             <td class="ps-3 fw-semibold">{{ $label }}</td>
