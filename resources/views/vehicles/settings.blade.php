@@ -12,6 +12,30 @@
     <div class="col-md-8">
         <div class="card mb-3">
             <div class="card-body">
+                <h6 class="text-muted text-uppercase small mb-3">Link Lihat Data Mobil per Depo</h6>
+                <p class="text-muted small">Penerima link bisa melihat mobil dan dokumen depo terkait tanpa login. Bagikan hanya kepada pihak yang memerlukan. Ganti link untuk menonaktifkan link lama.</p>
+                @foreach($depos as $depo)
+                    @php($depoLink = $depoLinks->get($depo->KodeDepo))
+                    <div class="border rounded p-3 mb-2">
+                        <strong>{{ $depo->NamaSingkat }} ({{ $depo->KodeDepo }})</strong>
+                        @if($depoLink)
+                            <div class="input-group my-2">
+                                <input class="form-control" aria-label="Link {{ $depo->NamaSingkat }}" value="{{ route('vehicles.public.index', $depoLink->token) }}" readonly>
+                                <button type="button" class="btn btn-outline-secondary" onclick="var input=this.previousElementSibling; input.select(); navigator.clipboard.writeText(input.value);">Salin</button>
+                                <a class="btn btn-outline-primary" href="{{ route('vehicles.public.index', $depoLink->token) }}" target="_blank" rel="noreferrer">Buka</a>
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('vehicles.saveDepoLink') }}" @if($depoLink) onsubmit="return confirm('Ganti link depo ini? Link lama tidak akan berlaku lagi.');" @endif>
+                            @csrf
+                            <input type="hidden" name="kode_depo" value="{{ $depo->KodeDepo }}">
+                            <button class="btn btn-sm btn-outline-primary mt-2">{{ $depoLink ? 'Ganti Link Acak' : 'Buat Link Acak' }}</button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-body">
                 <h6 class="text-muted text-uppercase small mb-3"><i class="bi bi-link-45deg me-1"></i>Link Tambah Mobil</h6>
                 <p class="text-muted small">Bagikan link ini ke staf logistik supaya mereka bisa input data mobil sendiri tanpa perlu password.</p>
                 <div class="input-group mb-2">

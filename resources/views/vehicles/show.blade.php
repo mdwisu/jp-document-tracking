@@ -3,17 +3,19 @@
 @section('content')
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">Data Mobil</a></li>
+        <li class="breadcrumb-item"><a href="{{ isset($link) ? route('vehicles.public.index', $link->token) : route('vehicles.index') }}">Data Mobil</a></li>
         <li class="breadcrumb-item active">{{ $vehicle->no_polisi }}</li>
     </ol>
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0"><i class="bi bi-truck me-2"></i>{{ $vehicle->no_polisi }}</h4>
+    @unless(isset($link))
     <form action="{{ route('vehicles.destroy', $vehicle) }}" method="POST" onsubmit="return confirm('Hapus data mobil ini beserta berkasnya?');">
         @csrf @method('DELETE')
         <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Hapus</button>
     </form>
+    @endunless
 </div>
 
 <div class="row g-3">
@@ -68,8 +70,8 @@
                                 <td>{{ $f->file_size_formatted }}</td>
                                 <td class="text-end pe-3">
                                     <div class="d-inline-flex gap-2 flex-nowrap">
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
-                                        <a href="{{ route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ isset($link) ? route('vehicles.public.preview', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
+                                        <a href="{{ isset($link) ? route('vehicles.public.download', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
                                     </div>
                                 </td>
                             @else
@@ -115,8 +117,8 @@
                                                 <td>{{ $f->expiry_date?->format('d M Y') ?? '-' }}</td>
                                                 <td class="text-end pe-3">
                                                     <div class="d-inline-flex gap-2 flex-nowrap">
-                                                        <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
-                                                        <a href="{{ route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+                                                        <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ isset($link) ? route('vehicles.public.preview', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
+                                                        <a href="{{ isset($link) ? route('vehicles.public.download', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
                                                     </div>
                                                 </td>
                                             </tr>

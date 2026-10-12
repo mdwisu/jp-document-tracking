@@ -2,7 +2,8 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Data Mobil</h4>
+    <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Data Mobil @isset($link) — {{ $depoNames[$link->kode_depo] ?? $link->kode_depo }} @endisset</h4>
+    @unless(isset($link))
     <div class="d-flex gap-2">
         <a href="{{ route('vehicles.export', ['q' => $search]) }}" class="btn btn-outline-success btn-sm">
             <i class="bi bi-file-earmark-excel me-1"></i>Export
@@ -14,6 +15,7 @@
             <i class="bi bi-plus-lg me-1"></i>Tambah Mobil
         </a>
     </div>
+@endunless
 </div>
 
 <form method="GET" class="mb-3">
@@ -23,7 +25,7 @@
 @if($vehicles->isEmpty())
     <div class="card"><div class="card-body text-center text-muted py-5">
         <i class="bi bi-truck fs-1 d-block mb-2"></i>
-        Belum ada data mobil. Klik "Tambah Mobil" untuk mulai.
+        Belum ada data mobil yang sesuai.
     </div></div>
 @else
     <div class="card"><div class="card-body p-0">
@@ -56,7 +58,7 @@
                             @endif
                         </td>
                         <td class="text-end pe-3">
-                            <a href="{{ route('vehicles.show', $vehicle) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                            <a href="{{ isset($link) ? route('vehicles.public.show', ['link' => $link->token, 'vehicle' => $vehicle]) : route('vehicles.show', $vehicle) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
                         </td>
                     </tr>
                 @endforeach

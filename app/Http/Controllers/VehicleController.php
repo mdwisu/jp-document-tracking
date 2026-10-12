@@ -6,6 +6,7 @@ use App\Models\LogboDepo;
 use App\Models\Mobil;
 use App\Models\Vehicle;
 use App\Models\VehicleFile;
+use App\Models\VehicleDepoLink;
 use App\Models\VehicleSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -116,7 +117,61 @@ class VehicleController extends Controller
     {
         $createToken = VehicleSetting::current()->create_token;
 
-        return view('vehicles.settings', compact('createToken'));
+        $depos = LogboDepo::orderBy('NamaSingkat')->get(['KodeDepo', 'NamaSingkat']);
+        $depoLinks = VehicleDepoLink::all()->keyBy('kode_depo');
+
+        return view('vehicles.settings', compact('createToken', 'depos', 'depoLinks'));
+    }
+
+    public function saveDepoLink(Request $request)
+    {
+        $data = $request->validate(['kode_depo' => 'required|string|max:255']);
+        abort_unless(LogboDepo::where('KodeDepo', $data['kode_depo'])->exists(), 422);
+
+        VehicleDepoLink::updateOrCreate(
+            ['kode_depo' => $data['kode_depo']],
+            ['token' => Str::random(64)]
+        );
+
+        return back()->with('success', 'Link depo berhasil dibuat/diganti. Link lama tidak berlaku lagi.');
+    }
+
+    public function publicIndex(Request $request, VehicleDepoLink $link)
+    {
+        $search = $request->get('q');
+        $vehicles = Vehicle::with('files')->where('kode_depo', $link->kode_depo)
+            ->when($search, fn ($q) => $q->where(fn ($q2) => $q2
+                ->where('kode_mobil', 'like', "%{$search}%")
+                ->orWhere('no_polisi', 'like', "%{$search}%")))
+            ->orderByDesc('created_at')->get();
+        $depoNames = LogboDepo::namesByCodes([$link->kode_depo]);
+
+        return response()->view('vehicles.index', compact('vehicles', 'search', 'depoNames', 'link'))
+            ->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+    }
+
+    public function publicShow(VehicleDepoLink $link, Vehicle $vehicle)
+    {
+        abort_unless($vehicle->kode_depo === $link->kode_depo, 404);
+        $vehicle->load('files');
+        $depoName = LogboDepo::namesByCodes([$link->kode_depo])->get($link->kode_depo);
+
+        return response()->view('vehicles.show', compact('vehicle', 'depoName', 'link'))
+            ->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+    }
+
+    public function publicPreview(VehicleDepoLink $link, VehicleFile $file)
+    {
+        abort_unless($file->vehicle && $file->vehicle->kode_depo === $link->kode_depo, 404);
+
+        return $this->preview($file)->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+    }
+
+    public function publicDownload(VehicleDepoLink $link, VehicleFile $file)
+    {
+        abort_unless($file->vehicle && $file->vehicle->kode_depo === $link->kode_depo, 404);
+
+        return $this->download($file)->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
     }
 
     public function updatePassword(Request $request)

@@ -35,6 +35,11 @@ Route::get('/vehicles/tambah/{token}/cari-mobil', [VehicleController::class, 'se
 Route::get('/vehicles/tambah/{token}/dokumen/{mobilId}', [VehicleController::class, 'documentStatus'])->name('vehicles.documentStatus');
 Route::post('/vehicles/tambah/{token}/dokumen', [VehicleController::class, 'saveDocument'])->name('vehicles.saveDocument');
 
+Route::get('/vehicles/depo/{link:token}', [VehicleController::class, 'publicIndex'])->name('vehicles.public.index');
+Route::get('/vehicles/depo/{link:token}/mobil/{vehicle}', [VehicleController::class, 'publicShow'])->name('vehicles.public.show');
+Route::get('/vehicles/depo/{link:token}/files/{file}/preview', [VehicleController::class, 'publicPreview'])->name('vehicles.public.preview');
+Route::get('/vehicles/depo/{link:token}/files/{file}/download', [VehicleController::class, 'publicDownload'])->name('vehicles.public.download');
+
 Route::get('/vehicles/unlock', [VehicleController::class, 'unlockForm'])->name('vehicles.unlockForm');
 Route::post('/vehicles/unlock', [VehicleController::class, 'unlock'])->name('vehicles.unlock');
 
@@ -44,6 +49,7 @@ Route::middleware('vehicles.unlocked')->group(function () {
     Route::get('/vehicles/settings', [VehicleController::class, 'settings'])->name('vehicles.settings');
     Route::post('/vehicles/settings/password', [VehicleController::class, 'updatePassword'])->name('vehicles.updatePassword');
     Route::post('/vehicles/settings/regenerate-token', [VehicleController::class, 'regenerateToken'])->name('vehicles.regenerateToken');
+    Route::post('/vehicles/settings/depo-link', [VehicleController::class, 'saveDepoLink'])->name('vehicles.saveDepoLink');
     Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     Route::get('/vehicle-files/{file}/download', [VehicleController::class, 'download'])->name('vehicleFiles.download');
