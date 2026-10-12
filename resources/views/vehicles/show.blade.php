@@ -10,12 +10,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0"><i class="bi bi-truck me-2"></i>{{ $vehicle->no_polisi }}</h4>
-    @unless(isset($link))
-    <form action="{{ route('vehicles.destroy', $vehicle) }}" method="POST" onsubmit="return confirm('Hapus data mobil ini beserta berkasnya?');">
+    <form action="{{ isset($link) ? route('vehicles.public.destroy', ['link' => $link->token, 'vehicle' => $vehicle]) : route('vehicles.destroy', $vehicle) }}" method="POST" onsubmit="return confirm('Hapus data mobil ini beserta berkasnya?');">
         @csrf @method('DELETE')
         <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Hapus</button>
     </form>
-    @endunless
 </div>
 
 <div class="row g-3">
@@ -41,7 +39,7 @@
                 </tr></thead>
                 <tbody>
                     @php($docPeriods = ['stnk' => '5 tahun', 'pajak' => '1 tahun'])
-                    @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak'] as $type => $label)
+                    @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak', 'foto_depan' => 'Tampak Depan', 'foto_belakang' => 'Tampak Belakang', 'foto_kiri' => 'Tampak Kiri', 'foto_kanan' => 'Tampak Kanan', 'foto_depan_kiri' => 'Serong Depan Kiri', 'foto_depan_kanan' => 'Serong Depan Kanan', 'foto_belakang_kiri' => 'Serong Belakang Kiri', 'foto_belakang_kanan' => 'Serong Belakang Kanan'] as $type => $label)
                         @php($f = $vehicle->currentFileOfType($type))
                         <tr>
                             <td class="ps-3 fw-semibold">
@@ -51,9 +49,14 @@
                                 @endif
                             </td>
                             @if($f)
-                                <td>{{ $f->original_filename }}</td>
                                 <td>
-                                    @if($type === 'barcode')
+                                    @if(str_starts_with($type, 'foto_'))
+                                        <img src="{{ isset($link) ? route('vehicles.public.preview', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.preview', $f) }}" alt="{{ $label }}" class="img-thumbnail d-block mb-1" style="max-width:140px;max-height:100px;" loading="lazy">
+                                    @endif
+                                    {{ $f->original_filename }}
+                                </td>
+                                <td>
+                                    @if($type === 'barcode' || str_starts_with($type, 'foto_'))
                                         <span class="text-muted">-</span>
                                     @else
                                         {{ $f->expiry_date?->format('d M Y') ?? '-' }}
@@ -72,6 +75,7 @@
                                     <div class="d-inline-flex gap-2 flex-nowrap">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ isset($link) ? route('vehicles.public.preview', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
                                         <a href="{{ isset($link) ? route('vehicles.public.download', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+                                    @include('vehicles.partials.delete-file')
                                     </div>
                                 </td>
                             @else
@@ -89,7 +93,7 @@
     <div class="card-body">
         <h6 class="text-muted text-uppercase small mb-3">Riwayat Dokumen</h6>
         <div class="accordion" id="historyAccordion">
-            @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak'] as $type => $label)
+            @foreach(['barcode' => 'Barcode', 'stnk' => 'STNK', 'kir' => 'KIR', 'pajak' => 'Pajak', 'foto_depan' => 'Tampak Depan', 'foto_belakang' => 'Tampak Belakang', 'foto_kiri' => 'Tampak Kiri', 'foto_kanan' => 'Tampak Kanan', 'foto_depan_kiri' => 'Serong Depan Kiri', 'foto_depan_kanan' => 'Serong Depan Kanan', 'foto_belakang_kiri' => 'Serong Belakang Kiri', 'foto_belakang_kanan' => 'Serong Belakang Kanan'] as $type => $label)
                 @php($history = $vehicle->historyOfType($type))
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -119,6 +123,7 @@
                                                     <div class="d-inline-flex gap-2 flex-nowrap">
                                                         <button class="btn btn-sm btn-outline-secondary" onclick="previewFile('{{ isset($link) ? route('vehicles.public.preview', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.preview', $f) }}', '{{ $f->original_filename }}')"><i class="bi bi-eye"></i></button>
                                                         <a href="{{ isset($link) ? route('vehicles.public.download', ['link' => $link->token, 'file' => $f]) : route('vehicleFiles.download', $f) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+                                                    @include('vehicles.partials.delete-file')
                                                     </div>
                                                 </td>
                                             </tr>

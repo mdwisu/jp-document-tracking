@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
@@ -28,6 +29,17 @@ class Vehicle extends Model
         });
     }
 
+    public function mobil(): BelongsTo
+    {
+        return $this->belongsTo(Mobil::class, 'mobil_id', 'MobilId');
+    }
+
+    // Depo selalu mengikuti master logistik, bukan salinan saat upload terakhir.
+    public function getKodeDepoAttribute($value): ?string
+    {
+        return $this->mobil?->KodeDepo;
+    }
+
     public function files(): HasMany
     {
         return $this->hasMany(VehicleFile::class);
@@ -36,6 +48,11 @@ class Vehicle extends Model
     /**
      * Baris VehicleFile terbaru untuk jenis dokumen tertentu (versi yang berlaku saat ini).
      */
+    public function getDocumentCountAttribute(): int
+    {
+        return $this->files->whereIn('type', ['barcode', 'stnk', 'kir', 'pajak'])->pluck('type')->unique()->count();
+    }
+
     public function currentFileOfType(string $type): ?VehicleFile
     {
         return $this->files

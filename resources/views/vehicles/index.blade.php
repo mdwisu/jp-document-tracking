@@ -5,6 +5,7 @@
     <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Data Mobil @isset($link) — {{ $depoNames[$link->kode_depo] ?? $link->kode_depo }} @endisset</h4>
     @unless(isset($link))
     <div class="d-flex gap-2">
+        <a href="{{ route('vehicles.trash') }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Sampah</a>
         <a href="{{ route('vehicles.export', ['q' => $search]) }}" class="btn btn-outline-success btn-sm">
             <i class="bi bi-file-earmark-excel me-1"></i>Export
         </a>
@@ -45,7 +46,7 @@
                         <td class="ps-3">{{ $vehicle->kode_mobil }}</td>
                         <td class="fw-semibold">{{ $vehicle->no_polisi }}</td>
                         <td>{{ $depoNames[$vehicle->kode_depo] ?? $vehicle->kode_depo ?? '-' }}</td>
-                        <td>{{ $vehicle->files->count() }}/4</td>
+                        <td>{{ $vehicle->document_count }}/4</td>
                         <td>
                             @if($status === 'expired')
                                 <span class="badge bg-danger-subtle text-danger">Kadaluarsa</span>

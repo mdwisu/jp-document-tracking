@@ -10,18 +10,19 @@ use App\Models\VehicleDepoLink;
 use App\Models\VehicleSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class VehicleController extends Controller
 {
-    private const FILE_TYPES = ['barcode', 'stnk', 'kir', 'pajak'];
+    private const FILE_TYPES = ['barcode', 'stnk', 'kir', 'pajak', 'foto_depan', 'foto_belakang', 'foto_kiri', 'foto_kanan', 'foto_depan_kiri', 'foto_depan_kanan', 'foto_belakang_kiri', 'foto_belakang_kanan'];
 
     public function index(Request $request)
     {
         $search = $request->get('q');
 
-        $vehicles = Vehicle::with('files')
+        $vehicles = Vehicle::with(['files', 'mobil'])
             ->when($search, fn ($q) => $q->where(fn ($q2) => $q2
                 ->where('kode_mobil', 'like', "%{$search}%")
                 ->orWhere('no_polisi', 'like', "%{$search}%")))
@@ -39,7 +40,7 @@ class VehicleController extends Controller
     {
         $search = $request->get('q');
 
-        $vehicles = Vehicle::with('files')
+        $vehicles = Vehicle::with(['files', 'mobil'])
             ->when($search, fn ($q) => $q->where(fn ($q2) => $q2
                 ->where('kode_mobil', 'like', "%{$search}%")
                 ->orWhere('no_polisi', 'like', "%{$search}%")))
@@ -75,7 +76,7 @@ class VehicleController extends Controller
                     $vehicle->kode_mobil,
                     $vehicle->no_polisi,
                     $depoNames[$vehicle->kode_depo] ?? $vehicle->kode_depo ?? '-',
-                    $vehicle->files->count() . '/4',
+                    $vehicle->document_count . '/4',
                     $statusLabel[$vehicle->worstExpiryStatus()] ?? '-',
                     $vehicle->currentFileOfType('stnk')?->expiry_date?->format('Y-m-d') ?? '-',
                     $vehicle->currentFileOfType('kir')?->expiry_date?->format('Y-m-d') ?? '-',
@@ -139,7 +140,7 @@ class VehicleController extends Controller
     public function publicIndex(Request $request, VehicleDepoLink $link)
     {
         $search = $request->get('q');
-        $vehicles = Vehicle::with('files')->where('kode_depo', $link->kode_depo)
+        $vehicles = Vehicle::with(['files', 'mobil'])->whereIn('mobil_id', Mobil::where('KodeDepo', $link->kode_depo)->pluck('MobilId'))
             ->when($search, fn ($q) => $q->where(fn ($q2) => $q2
                 ->where('kode_mobil', 'like', "%{$search}%")
                 ->orWhere('no_polisi', 'like', "%{$search}%")))
@@ -172,6 +173,25 @@ class VehicleController extends Controller
         abort_unless($file->vehicle && $file->vehicle->kode_depo === $link->kode_depo, 404);
 
         return $this->download($file)->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+    }
+
+    public function publicDestroy(VehicleDepoLink $link, Vehicle $vehicle)
+    {
+        abort_unless($vehicle->kode_depo === $link->kode_depo, 404);
+        $vehicle->delete();
+
+        return redirect()->route('vehicles.public.index', $link->token)
+            ->with('success', 'Data mobil dipindahkan ke Sampah.');
+    }
+
+    public function publicDestroyFile(VehicleDepoLink $link, VehicleFile $file)
+    {
+        $vehicle = $file->vehicle;
+        abort_unless($vehicle && $vehicle->kode_depo === $link->kode_depo, 404);
+        $file->delete();
+
+        return redirect()->route('vehicles.public.show', ['link' => $link->token, 'vehicle' => $vehicle])
+            ->with('success', 'Berkas dipindahkan ke Sampah.');
     }
 
     public function updatePassword(Request $request)
@@ -272,56 +292,68 @@ class VehicleController extends Controller
         return response()->json($documents);
     }
 
-    /**
-     * Simpan 1 dokumen (barcode/STNK/KIR/pajak) untuk 1 mobil. Selalu menambah baris baru
-     * (riwayat/append-only) — tidak pernah menimpa dokumen versi sebelumnya. Kalau mobil ini
-     * belum pernah disentuh sama sekali, baris `vehicles` dibuat otomatis di sini.
-     */
     public function saveDocument(Request $request, string $token)
     {
         $this->assertValidToken($token);
-
         $data = $request->validate([
-            'mobil_id'    => 'required|uuid',
-            'kode_mobil'  => 'required|string|max:50',
-            'no_polisi'   => 'required|string|max:20',
-            'kode_depo'   => 'nullable|string|max:20',
-            'type'        => 'required|in:' . implode(',', self::FILE_TYPES),
-            'file'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
-            'expiry_date' => 'required_unless:type,barcode|date',
-        ], [
-            'expiry_date.required_unless' => 'Tanggal Jatuh Tempo wajib diisi.',
-        ], [
-            'file' => 'berkas',
-            'expiry_date' => 'Tanggal Jatuh Tempo',
+            'mobil_id' => 'required|uuid',
+            'type' => 'required|in:barcode,stnk,kir,pajak',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'expiry_date' => 'exclude_unless:type,stnk,kir,pajak|required|date',
         ]);
+        $mobil = Mobil::where('MobilId', $data['mobil_id'])->where('SoftDelete', 0)->first();
+        abort_unless($mobil, 422, 'Data mobil tidak ditemukan di database logistik.');
+        DB::transaction(function () use ($request, $data, $mobil) {
+            $vehicle = Vehicle::updateOrCreate(['mobil_id' => $data['mobil_id']], [
+                'kode_mobil' => $mobil->KodeMobil, 'no_polisi' => $mobil->NoPolisi, 'kode_depo' => $mobil->KodeDepo,
+            ]);
+            $this->appendVehicleFile($vehicle, $data['type'], $request->file('file'), $data['expiry_date'] ?? null);
+        });
 
-        if (! Mobil::where('MobilId', $data['mobil_id'])->where('SoftDelete', 0)->exists()) {
+        return response()->json(['message' => 'Dokumen berhasil disimpan.']);
+    }
+
+    /** Simpan satu paket lengkap foto secara bersamaan. */
+    public function savePhotos(Request $request, string $token)
+    {
+        $this->assertValidToken($token);
+        $photoTypes = array_values(array_filter(self::FILE_TYPES, fn ($type) => str_starts_with($type, 'foto_')));
+        $rules = ['mobil_id' => 'required|uuid'];
+        $attributes = [];
+        foreach ($photoTypes as $type) {
+            $mimes = str_starts_with($type, 'foto_') ? 'jpg,jpeg,png' : 'pdf,jpg,jpeg,png';
+            $rules["files.$type"] = "required|file|mimes:$mimes|max:20480";
+            $attributes["files.$type"] = str_replace('_', ' ', $type);
+        }
+        $data = $request->validate($rules, ['required' => ':attribute wajib diisi.'], $attributes);
+        $totalSize = collect($photoTypes)->sum(fn ($type) => $request->file("files.$type")->getSize());
+        if ($totalSize > 90 * 1024 * 1024) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['files' => 'Total upload maksimal 90 MB.']);
+        }
+        $mobil = Mobil::where('MobilId', $data['mobil_id'])->where('SoftDelete', 0)->first();
+        if (! $mobil) {
             return response()->json(['message' => 'Data mobil tidak ditemukan di database logistik.'], 422);
         }
 
-        $vehicle = Vehicle::firstOrCreate(
-            ['mobil_id' => $data['mobil_id']],
-            ['kode_mobil' => $data['kode_mobil'], 'no_polisi' => $data['no_polisi'], 'kode_depo' => $data['kode_depo'] ?? null]
-        );
+        $paths = [];
+        try {
+            DB::transaction(function () use ($request, $data, $mobil, $photoTypes, &$paths) {
+                $vehicle = Vehicle::updateOrCreate(['mobil_id' => $data['mobil_id']], [
+                    'kode_mobil' => $mobil->KodeMobil,
+                    'no_polisi' => $mobil->NoPolisi,
+                    'kode_depo' => $mobil->KodeDepo,
+                ]);
+                foreach ($photoTypes as $type) {
+                    $file = $this->appendVehicleFile($vehicle, $type, $request->file("files.$type"), $data['expiry_dates'][$type] ?? null);
+                    $paths[] = $file->file_path;
+                }
+            });
+        } catch (\Throwable $e) {
+            Storage::disk('vehicle_files')->delete($paths);
+            throw $e;
+        }
 
-        // Refresh cache lokal mengikuti data LOG_BO_PROD terbaru yang dikirim dari form.
-        $vehicle->update([
-            'kode_mobil' => $data['kode_mobil'],
-            'no_polisi'  => $data['no_polisi'],
-            'kode_depo'  => $data['kode_depo'] ?? null,
-        ]);
-
-        $file = $this->appendVehicleFile($vehicle, $data['type'], $request->file('file'), $data['expiry_date'] ?? null);
-
-        return response()->json([
-            'message'  => 'Dokumen berhasil disimpan.',
-            'document' => [
-                'original_filename' => $file->original_filename,
-                'expiry_date'       => $file->expiry_date?->format('Y-m-d'),
-                'uploaded_at'       => $file->created_at->timezone('Asia/Jakarta')->format('d M Y H:i'),
-            ],
-        ]);
+        return response()->json(['message' => 'Seluruh foto mobil berhasil disimpan.']);
     }
 
     private function appendVehicleFile(Vehicle $vehicle, string $type, $file, ?string $expiryDate): VehicleFile
@@ -332,14 +364,23 @@ class VehicleController extends Controller
         $storedName = Str::uuid() . ".{$ext}";
         $path = $file->storeAs("vehicles/{$vehicle->id}", $storedName, 'vehicle_files');
 
-        return $vehicle->files()->create([
+        if (! $path) {
+            throw new \RuntimeException('Berkas gagal disimpan.');
+        }
+
+        try {
+            return $vehicle->files()->create([
             'type'              => $type,
             'original_filename' => $displayName,
             'stored_filename'   => $storedName,
             'file_path'         => $path,
             'file_size'         => $file->getSize(),
             'expiry_date'       => $expiryDate,
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            Storage::disk('vehicle_files')->delete($path);
+            throw $e;
+        }
     }
 
     public function show(Vehicle $vehicle)
@@ -364,6 +405,71 @@ class VehicleController extends Controller
         $mime = Storage::disk('vehicle_files')->mimeType($file->file_path);
 
         return response()->file($path, ['Content-Type' => $mime]);
+    }
+
+    public function destroyFile(VehicleFile $file)
+    {
+        $vehicle = $file->vehicle;
+        abort_unless($vehicle, 404);
+        $file->delete();
+
+        return redirect()->route('vehicles.show', $vehicle)->with('success', 'Berkas dipindahkan ke Sampah.');
+    }
+
+    public function trash()
+    {
+        $vehicles = Vehicle::onlyTrashed()->orderByDesc('deleted_at')->get();
+        $files = VehicleFile::onlyTrashed()->whereHas('vehicle')->with('vehicle')->orderByDesc('deleted_at')->get();
+
+        return view('vehicles.trash', compact('vehicles', 'files'));
+    }
+
+    public function restoreVehicle(int $id)
+    {
+        $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
+        $vehicle->restore();
+
+        return back()->with('success', 'Mobil dipulihkan. Pulihkan berkas yang diperlukan dari daftar Sampah Berkas di bawah.');
+    }
+
+    public function restoreFile(int $id)
+    {
+        $file = VehicleFile::onlyTrashed()->findOrFail($id);
+        abort_unless($file->vehicle, 404);
+        $file->restore();
+
+        return back()->with('success', 'Berkas berhasil dipulihkan.');
+    }
+
+    public function forceDeleteFile(int $id)
+    {
+        $file = VehicleFile::onlyTrashed()->findOrFail($id);
+        abort_unless($file->vehicle, 404);
+        $this->deleteVehicleFile($file);
+
+        return back()->with('success', 'Berkas dihapus permanen dari penyimpanan.');
+    }
+
+    public function forceDeleteVehicle(int $id)
+    {
+        $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
+        foreach ($vehicle->files()->withTrashed()->get() as $file) {
+            $this->deleteVehicleFile($file);
+        }
+        $vehicle->forceDelete();
+
+        return back()->with('success', 'Mobil beserta seluruh berkasnya dihapus permanen.');
+    }
+
+    private function deleteVehicleFile(VehicleFile $file): void
+    {
+        $disk = Storage::disk('vehicle_files');
+        if ($disk->exists($file->file_path) && ! $disk->delete($file->file_path)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file' => 'Berkas gagal dihapus dari penyimpanan. Silakan coba lagi.',
+            ]);
+        }
+        $file->forceDelete();
     }
 
     public function destroy(Vehicle $vehicle)

@@ -13,7 +13,7 @@
         <div class="card mb-3">
             <div class="card-body">
                 <h6 class="text-muted text-uppercase small mb-3">Link Lihat Data Mobil per Depo</h6>
-                <p class="text-muted small">Penerima link bisa melihat mobil dan dokumen depo terkait tanpa login. Bagikan hanya kepada pihak yang memerlukan. Ganti link untuk menonaktifkan link lama.</p>
+                <p class="text-muted small">Penerima link bisa melihat serta menghapus mobil dan berkas depo terkait tanpa login. Bagikan hanya kepada pihak yang memerlukan. Ganti link untuk menonaktifkan link lama.</p>
                 @foreach($depos as $depo)
                     @php($depoLink = $depoLinks->get($depo->KodeDepo))
                     <div class="border rounded p-3 mb-2">

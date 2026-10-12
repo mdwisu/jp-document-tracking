@@ -33,9 +33,12 @@ Route::middleware('master.unlocked')->group(function () {
 Route::get('/vehicles/tambah/{token}', [VehicleController::class, 'create'])->name('vehicles.create');
 Route::get('/vehicles/tambah/{token}/cari-mobil', [VehicleController::class, 'searchMobil'])->name('vehicles.searchMobil');
 Route::get('/vehicles/tambah/{token}/dokumen/{mobilId}', [VehicleController::class, 'documentStatus'])->name('vehicles.documentStatus');
+Route::post('/vehicles/tambah/{token}/foto', [VehicleController::class, 'savePhotos'])->name('vehicles.savePhotos');
 Route::post('/vehicles/tambah/{token}/dokumen', [VehicleController::class, 'saveDocument'])->name('vehicles.saveDocument');
 
 Route::get('/vehicles/depo/{link:token}', [VehicleController::class, 'publicIndex'])->name('vehicles.public.index');
+Route::delete('/vehicles/depo/{link:token}/mobil/{vehicle}', [VehicleController::class, 'publicDestroy'])->name('vehicles.public.destroy');
+Route::delete('/vehicles/depo/{link:token}/files/{file}', [VehicleController::class, 'publicDestroyFile'])->name('vehicles.public.destroyFile');
 Route::get('/vehicles/depo/{link:token}/mobil/{vehicle}', [VehicleController::class, 'publicShow'])->name('vehicles.public.show');
 Route::get('/vehicles/depo/{link:token}/files/{file}/preview', [VehicleController::class, 'publicPreview'])->name('vehicles.public.preview');
 Route::get('/vehicles/depo/{link:token}/files/{file}/download', [VehicleController::class, 'publicDownload'])->name('vehicles.public.download');
@@ -50,8 +53,14 @@ Route::middleware('vehicles.unlocked')->group(function () {
     Route::post('/vehicles/settings/password', [VehicleController::class, 'updatePassword'])->name('vehicles.updatePassword');
     Route::post('/vehicles/settings/regenerate-token', [VehicleController::class, 'regenerateToken'])->name('vehicles.regenerateToken');
     Route::post('/vehicles/settings/depo-link', [VehicleController::class, 'saveDepoLink'])->name('vehicles.saveDepoLink');
+    Route::get('/vehicles/trash', [VehicleController::class, 'trash'])->name('vehicles.trash');
+    Route::post('/vehicles/trash/{id}/restore', [VehicleController::class, 'restoreVehicle'])->name('vehicles.restore');
+    Route::delete('/vehicles/trash/{id}', [VehicleController::class, 'forceDeleteVehicle'])->name('vehicles.forceDelete');
+    Route::post('/vehicle-files/trash/{id}/restore', [VehicleController::class, 'restoreFile'])->name('vehicleFiles.restore');
+    Route::delete('/vehicle-files/trash/{id}', [VehicleController::class, 'forceDeleteFile'])->name('vehicleFiles.forceDelete');
     Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+    Route::delete('/vehicle-files/{file}', [VehicleController::class, 'destroyFile'])->name('vehicleFiles.destroy');
     Route::get('/vehicle-files/{file}/download', [VehicleController::class, 'download'])->name('vehicleFiles.download');
     Route::get('/vehicle-files/{file}/preview', [VehicleController::class, 'preview'])->name('vehicleFiles.preview');
 });
