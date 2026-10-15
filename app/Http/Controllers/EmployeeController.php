@@ -52,7 +52,7 @@ class EmployeeController extends Controller
             'ijazah'     => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
         ], [
             'ktp_number.digits'  => 'Nomor KTP harus tepat 16 digit angka.',
-            'ktp_number.unique'  => 'Nomor KTP sudah terdaftar.',
+            'ktp_number.unique'  => 'Data karyawan dengan nomor KTP ini sudah pernah terdaftar. Silakan hubungi HRD untuk informasi lebih lanjut.',
             'kk_number.digits'  => 'Nomor KK harus tepat 16 digit angka.',
             'phone.regex'       => 'Nomor HP harus berupa angka 10–15 digit.',
             'email.email'       => 'Format email tidak valid atau domainnya tidak ditemukan.',
