@@ -165,14 +165,22 @@ class VehicleController extends Controller
     {
         abort_unless($file->vehicle && $file->vehicle->kode_depo === $link->kode_depo, 404);
 
-        return $this->preview($file)->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+        $response = $this->preview($file);
+        $response->headers->set('Cache-Control', 'private, no-store');
+        $response->headers->set('Referrer-Policy', 'no-referrer');
+
+        return $response;
     }
 
     public function publicDownload(VehicleDepoLink $link, VehicleFile $file)
     {
         abort_unless($file->vehicle && $file->vehicle->kode_depo === $link->kode_depo, 404);
 
-        return $this->download($file)->header('Cache-Control', 'private, no-store')->header('Referrer-Policy', 'no-referrer');
+        $response = $this->download($file);
+        $response->headers->set('Cache-Control', 'private, no-store');
+        $response->headers->set('Referrer-Policy', 'no-referrer');
+
+        return $response;
     }
 
     public function publicDestroy(VehicleDepoLink $link, Vehicle $vehicle)
